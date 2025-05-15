@@ -3,11 +3,24 @@ package com.pulseras.api;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class PulserasApiApplication {
 
-	public static void main(String[] args) {
+	@Autowired
+	private Environment environment;
+
+    public static void main(String[] args) {
 		SpringApplication.run(PulserasApiApplication.class, args);
+	}
+
+	@EventListener(ApplicationReadyEvent.class)
+	public void logApplicationPort() {
+		String port = environment.getProperty("local.server.port");
+		System.out.println("Application started on port: " + port);
 	}
 }
