@@ -6,7 +6,7 @@ import com.pulseras.api.dto.ProductDto;
 import java.util.List;
 
 public interface ProductService {
-    List<ProductDto> getAll();
+    List<ProductDto> getAll(String keyword, String categoryId, int page, int size, String sort);
     ProductDto getById(String id);
     void create(CreateProductDto dto);
     void update(String id, CreateProductDto dto);
