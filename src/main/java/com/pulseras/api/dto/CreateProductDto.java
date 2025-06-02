@@ -1,11 +1,13 @@
 package com.pulseras.api.dto;
 
 import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
+import java.util.List;
 
 public class CreateProductDto {
 
-    @NotNull
-    private Integer categoryId;
+    @NotEmpty
+    private List<String> categoryIds;
 
     @NotBlank
     private String productName;
@@ -24,15 +26,18 @@ public class CreateProductDto {
     @NotBlank
     private String type;
 
+    @DecimalMin("0.0")
+    private BigDecimal price;
+
     @NotNull
     private Integer status;
 
-    public Integer getCategoryId() {
-        return categoryId;
+    public List<String> getCategoryIds() {
+        return categoryIds;
     }
 
-    public void setCategoryId(Integer categoryId) {
-        this.categoryId = categoryId;
+    public void setCategoryIds(List<String> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 
     public String getProductName() {
@@ -81,6 +86,14 @@ public class CreateProductDto {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public Integer getStatus() {

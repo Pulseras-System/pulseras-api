@@ -3,7 +3,9 @@ package com.pulseras.api.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "products")
 public class Product {
@@ -11,13 +13,15 @@ public class Product {
     @Id
     private String productId;
 
-    private int categoryId;
+    private List<String> categoryIds;
+
     private String productName;
     private String productDescription;
     private String productMaterial;
     private String productImage;
     private int quantity;
     private String type;
+    private BigDecimal price;
     private LocalDateTime createDate;
     private LocalDateTime lastEdited;
     private int status;
@@ -30,12 +34,12 @@ public class Product {
         this.productId = productId;
     }
 
-    public int getCategoryId() {
-        return categoryId;
+    public List<String> getCategoryIds() {
+        return categoryIds;
     }
 
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
+    public void setCategoryIds(List<String> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 
     public String getProductName() {
@@ -84,6 +88,14 @@ public class Product {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public LocalDateTime getCreateDate() {
