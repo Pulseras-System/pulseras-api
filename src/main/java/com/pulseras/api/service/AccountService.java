@@ -1,14 +1,13 @@
 package com.pulseras.api.service;
 
-import com.pulseras.api.dto.AccountDto;
-import com.pulseras.api.dto.CreateAccountDto;
-
-import java.util.List;
+import com.pulseras.api.dto.*;
 
 public interface AccountService {
-    List<AccountDto> getAll();
-    AccountDto getById(String id);
-    void create(CreateAccountDto dto);
-    void update(String id, CreateAccountDto dto);
-    void delete(String id);
+    AccountDTO getAccountById(String id);
+    AccountDTO createAccount(CreateAccountDTO dto);
+    AccountDTO updateAccount(String id, CreateAccountDTO dto);
+    void deleteAccount(String id);
+
+    LoginResponseDTO login(LoginRequestDTO loginRequest);
+    AccountDTO signUp(CreateAccountDTO createAccountDTO);
 }
