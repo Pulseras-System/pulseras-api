@@ -1,31 +1,39 @@
 package com.pulseras.api.mapper;
 
-import com.pulseras.api.dto.AccountDto;
-import com.pulseras.api.dto.CreateAccountDto;
+import com.pulseras.api.dto.AccountDTO;
+import com.pulseras.api.dto.CreateAccountDTO;
 import com.pulseras.api.entity.Account;
-import com.pulseras.api.util.PasswordUtil;
+import org.bson.types.ObjectId;
+
+import java.time.LocalDateTime;
 
 public class AccountMapper {
-    public static AccountDto toDto(Account account) {
-        AccountDto dto = new AccountDto();
-        dto.setAccountId(account.getAccountId());
-        dto.setFullName(account.getFullName());
-        dto.setUsername(account.getUsername());
-        dto.setPhone(account.getPhone());
-        dto.setEmail(account.getEmail());
-        dto.setRoleId(account.getRoleId());
-        dto.setStatus(account.getStatus());
-        return dto;
+
+    public static AccountDTO toDTO(Account entity) {
+        return AccountDTO.builder()
+                .id(entity.getId().toHexString())
+                .fullName(entity.getFullName())
+                .username(entity.getUsername())
+                .phone(entity.getPhone())
+                .email(entity.getEmail())
+                .roleId(entity.getRoleId())
+                .createDate(entity.getCreateDate())
+                .lastEdited(entity.getLastEdited())
+                .status(entity.getStatus())
+                .build();
     }
 
-    public static Account toEntity(CreateAccountDto dto) {
-        Account account = new Account();
-        account.setFullName(dto.getFullName());
-        account.setPassword(PasswordUtil.hash(dto.getPassword()));
-        account.setUsername(dto.getUsername());
-        account.setPhone(dto.getPhone());
-        account.setEmail(dto.getEmail());
-        account.setRoleId(dto.getRoleId());
-        return account;
+    public static Account toEntity(CreateAccountDTO dto) {
+        return Account.builder()
+                .id(new ObjectId())
+                .fullName(dto.getFullName())
+                .username(dto.getUsername())
+                .phone(dto.getPhone())
+                .email(dto.getEmail())
+                .roleId(dto.getRoleId())
+                .status(dto.getStatus())
+                .createDate(LocalDateTime.now())
+                .lastEdited(LocalDateTime.now())
+                .build();
     }
 }

@@ -1,45 +1,41 @@
 package com.pulseras.api.controller;
 
-import com.pulseras.api.dto.AccountDto;
-import com.pulseras.api.dto.CreateAccountDto;
+import com.pulseras.api.dto.*;
 import com.pulseras.api.service.AccountService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/accounts")
+@RequiredArgsConstructor
 public class AccountController {
 
-    private final AccountService service;
+    private final AccountService accountService;
 
-    public AccountController(AccountService service) {
-        this.service = service;
+    @PostMapping("/signup")
+    public ResponseEntity<AccountDTO> signUp(@RequestBody CreateAccountDTO dto) {
+        return ResponseEntity.ok(accountService.signUp(dto));
     }
 
-    @GetMapping
-    public List<AccountDto> getAll() {
-        return service.getAll();
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
+        return ResponseEntity.ok(accountService.login(loginRequest));
     }
 
     @GetMapping("/{id}")
-    public AccountDto getById(@PathVariable String id) {
-        return service.getById(id);
-    }
-
-    @PostMapping
-    public void create(@RequestBody CreateAccountDto dto) {
-        service.create(dto);
+    public ResponseEntity<AccountDTO> getById(@PathVariable String id) {
+        return ResponseEntity.ok(accountService.getAccountById(id));
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable String id, @RequestBody CreateAccountDto dto) {
-        service.update(id, dto);
+    public ResponseEntity<AccountDTO> update(@PathVariable String id, @RequestBody CreateAccountDTO dto) {
+        return ResponseEntity.ok(accountService.updateAccount(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        accountService.deleteAccount(id);
+        return ResponseEntity.noContent().build();
     }
 }
-
