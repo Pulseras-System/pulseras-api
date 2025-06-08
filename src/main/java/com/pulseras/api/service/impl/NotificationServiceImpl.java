@@ -4,7 +4,7 @@ import com.pulseras.api.dto.CreateNotificationDTO;
 import com.pulseras.api.dto.NotificationDTO;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.NotificationMapper;
-import com.pulseras.api.model.Notification;
+import com.pulseras.api.entity.Notification;
 import com.pulseras.api.repository.NotificationRepository;
 import com.pulseras.api.service.NotificationService;
 import lombok.RequiredArgsConstructor;
