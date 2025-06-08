@@ -4,7 +4,7 @@ import com.pulseras.api.dto.CreateRoleDTO;
 import com.pulseras.api.dto.RoleDTO;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.RoleMapper;
-import com.pulseras.api.model.Role;
+import com.pulseras.api.entity.Role;
 import com.pulseras.api.repository.RoleRepository;
 import com.pulseras.api.service.RoleService;
 import lombok.RequiredArgsConstructor;
