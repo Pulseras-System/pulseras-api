@@ -8,33 +8,25 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "accounts")
+@Document(collection = "vouchers")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Account {
+public class Voucher {
     @Id
     private ObjectId id;
 
     @Indexed
-    private String fullName;
+    private String voucherName;
 
-    private String password;
-
-    @Indexed(unique = true)
-    private String username;
-
-    private String phone;
-
-    @Indexed(unique = true)
-    private String email;
-
-    private Integer roleId;
-
-    private LocalDateTime createDate;
-
-    private LocalDateTime lastEdited;
-
+    private Integer voucherQuantity;
+    private Double minPrice;
+    private Double maxDiscount;
+    private Double discountPercentage;
+    private LocalDateTime startDay;
+    private LocalDateTime expireDay;
     private Integer status;
+    private LocalDateTime lastEdited;
+    private LocalDateTime createDate;
 }

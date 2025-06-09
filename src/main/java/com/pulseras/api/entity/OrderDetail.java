@@ -3,38 +3,25 @@ package com.pulseras.api.entity;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "accounts")
+@Document(collection = "order_details")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Account {
+public class OrderDetail {
     @Id
     private ObjectId id;
 
-    @Indexed
-    private String fullName;
-
-    private String password;
-
-    @Indexed(unique = true)
-    private String username;
-
-    private String phone;
-
-    @Indexed(unique = true)
-    private String email;
-
-    private Integer roleId;
-
-    private LocalDateTime createDate;
-
-    private LocalDateTime lastEdited;
-
+    private Integer orderId;
+    private Integer productId;
+    private Integer quantity;
+    private Double price;
+    private Integer promotionId;
     private Integer status;
+    private LocalDateTime createDate;
+    private LocalDateTime lastEdited;
 }
