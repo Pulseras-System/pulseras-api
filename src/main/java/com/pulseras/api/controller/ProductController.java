@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -19,7 +20,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductDto> getAll(
+    public Map<String, Object> getAll(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String categoryId,
             @RequestParam(defaultValue = "0") int page,
@@ -28,6 +29,7 @@ public class ProductController {
     ) {
         return service.getAll(keyword, categoryId, page, size, sort);
     }
+
 
     @GetMapping("/{id}")
     public ProductDto getById(@PathVariable String id) {
