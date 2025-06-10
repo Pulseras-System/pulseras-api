@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  pulseras-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    container_name: pulseras-api
+    environment:
+      # Ví dụ biến môi trường (thêm nếu cần)
+      SPRING_PROFILES_ACTIVE: prod
+    restart: unless-stopped
