@@ -107,4 +107,11 @@ public class AccountServiceImpl implements AccountService {
                 .map(AccountMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public String getRoleByAccountId(String id) {
+        Account account = repository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+        return account.getRoleId();
+    }
 }

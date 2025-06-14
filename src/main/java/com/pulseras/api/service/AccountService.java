@@ -12,4 +12,5 @@ public interface AccountService {
     List<AccountDTO> getAllAccounts();
     LoginResponseDTO login(LoginRequestDTO loginRequest);
     AccountDTO signUp(CreateAccountDTO createAccountDTO);
+    String getRoleByAccountId(String id);
 }

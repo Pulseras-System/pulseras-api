@@ -46,4 +46,10 @@ public class AccountController {
         List<AccountDTO> accounts = accountService.getAllAccounts();
         return ResponseEntity.ok(accounts);
     }
+
+    @GetMapping("/{id}/role")
+    public ResponseEntity<String> getRoleByAccountId(@PathVariable String id) {
+        String roleId = accountService.getRoleByAccountId(id);
+        return ResponseEntity.ok(roleId);
+    }
 }
