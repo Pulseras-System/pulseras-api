@@ -98,8 +98,6 @@ public class AccountServiceImpl implements AccountService {
         // just reuse createAccount logic
         return createAccount(createAccountDTO);
     }
-<<<<<<< Updated upstream
-=======
 
     @Override
     public List<AccountDTO> getAllAccounts() {
@@ -115,5 +113,4 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
         return account.getRoleId();
     }
->>>>>>> Stashed changes
 }

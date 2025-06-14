@@ -38,8 +38,6 @@ public class AccountController {
         accountService.deleteAccount(id);
         return ResponseEntity.noContent().build();
     }
-<<<<<<< Updated upstream
-=======
 
     @GetMapping
     public ResponseEntity<List<AccountDTO>> getAllAccounts() {
@@ -52,5 +50,4 @@ public class AccountController {
         String roleId = accountService.getRoleByAccountId(id);
         return ResponseEntity.ok(roleId);
     }
->>>>>>> Stashed changes
 }
