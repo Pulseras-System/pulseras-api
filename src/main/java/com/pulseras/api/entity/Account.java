@@ -30,7 +30,7 @@ public class Account {
     @Indexed(unique = true)
     private String email;
 
-    private Integer roleId;
+    private  String roleId;
 
     private LocalDateTime createDate;
 

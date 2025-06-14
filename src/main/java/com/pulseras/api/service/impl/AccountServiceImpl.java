@@ -98,4 +98,22 @@ public class AccountServiceImpl implements AccountService {
         // just reuse createAccount logic
         return createAccount(createAccountDTO);
     }
+<<<<<<< Updated upstream
+=======
+
+    @Override
+    public List<AccountDTO> getAllAccounts() {
+        List<Account> accounts = repository.findAll();
+        return accounts.stream()
+                .map(AccountMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getRoleByAccountId(String id) {
+        Account account = repository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+        return account.getRoleId();
+    }
+>>>>>>> Stashed changes
 }
