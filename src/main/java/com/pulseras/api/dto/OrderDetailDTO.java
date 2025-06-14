@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @Builder
 public class OrderDetailDTO {
     private String id;
-    private Integer orderId;
-    private Integer productId;
+    private String orderId;
+    private String productId;
     private Integer quantity;
     private Double price;
     private Integer promotionId;

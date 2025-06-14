@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -23,30 +24,36 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> getAll(String keyword, String categoryId, int page, int size, String sort) {
+    public Map<String, Object> getAll(String keyword, String categoryId, int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        Page<Product> pageResult;
+        Page<Product> result;
 
         boolean hasKeyword = keyword != null && !keyword.isEmpty();
         boolean hasCategory = categoryId != null && !categoryId.isEmpty();
 
         if (hasCategory && hasKeyword) {
-            pageResult = new PageImpl<>(
+            result = new PageImpl<>(
                     repository.findByCategoryIdsContainingAndProductNameContainingIgnoreCase(categoryId, keyword, pageable)
             );
         } else if (hasCategory) {
-            pageResult = new PageImpl<>(
+            result = new PageImpl<>(
                     repository.findByCategoryIdsContaining(categoryId, pageable)
             );
         } else if (hasKeyword) {
-            pageResult = repository.findByProductNameContainingIgnoreCase(keyword, pageable);
+            result = repository.findByProductNameContainingIgnoreCase(keyword, pageable);
         } else {
-            pageResult = repository.findAll(pageable);
+            result = repository.findAll(pageable);
         }
 
-        return pageResult.getContent().stream()
+        List<ProductDto> content = result.getContent().stream()
                 .map(ProductMapper::toDto)
                 .toList();
+
+        return Map.of(
+                "items", content,
+                "totalPages", result.getTotalPages(),
+                "totalItems", result.getTotalElements()
+        );
     }
 
     @Override

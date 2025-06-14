@@ -64,4 +64,11 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         }
         repository.deleteById(objId);
     }
+
+    @Override
+    public OrderDetailDTO getOrderDetailByOrderId(String orderId) {
+        OrderDetail orderDetail = repository.findFirstByOrderId(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order Detail not found for order ID: " + orderId));
+        return OrderDetailMapper.toDTO(orderDetail);
+    }
 }

@@ -16,8 +16,8 @@ public class OrderDetail {
     @Id
     private ObjectId id;
 
-    private Integer orderId;
-    private Integer productId;
+    private String orderId;
+    private String productId;
     private Integer quantity;
     private Double price;
     private Integer promotionId;
