@@ -12,8 +12,8 @@ public class OrderDTO {
     private String id;
     private String orderInfor;
     private Integer amount;
-    private Integer accountId;
-    private Integer voucherId;
+    private String accountId;
+    private String voucherId;
     private Double totalPrice;
     private Integer status;
     private LocalDateTime lastEdited;

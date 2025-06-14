@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,7 +97,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDTO signUp(CreateAccountDTO createAccountDTO) {
-        // just reuse createAccount logic
         return createAccount(createAccountDTO);
+    }
+
+    @Override
+    public List<AccountDTO> getAllAccounts() {
+        List<Account> accounts = repository.findAll();
+        return accounts.stream()
+                .map(AccountMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

@@ -41,4 +41,10 @@ public class OrderDetailController {
         service.deleteOrderDetail(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<OrderDetailDTO> getOrderDetailByOrderId(@PathVariable String orderId) {
+        OrderDetailDTO orderDetail = service.getOrderDetailByOrderId(orderId);
+        return ResponseEntity.ok(orderDetail);
+    }
 }

@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class CreateOrderDetailDTO {
-    private Integer orderId;
-    private Integer productId;
+    private String orderId;
+    private String productId;
     private Integer quantity;
     private Double price;
     private Integer promotionId;
