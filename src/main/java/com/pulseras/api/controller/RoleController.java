@@ -26,6 +26,11 @@ public class RoleController {
         return ResponseEntity.ok(roleService.getRoleById(id));
     }
 
+    @GetMapping("/role-name/{name}")
+    public ResponseEntity<RoleDTO> getByName(@PathVariable String name) {
+        return ResponseEntity.ok(roleService.getRoleByRoleName(name));
+    }
+
     @PostMapping
     public ResponseEntity<RoleDTO> create(@RequestBody CreateRoleDTO dto) {
         return ResponseEntity.ok(roleService.createRole(dto));

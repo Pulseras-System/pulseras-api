@@ -60,4 +60,11 @@ public class RoleServiceImpl implements RoleService {
         }
         roleRepository.deleteById(objId);
     }
+
+    @Override
+    public RoleDTO getRoleByRoleName(String roleName) {
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with roleName: " + roleName));
+        return RoleMapper.toDTO(role);
+    }
 }
