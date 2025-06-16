@@ -1,5 +1,6 @@
 package com.pulseras.api.service.impl;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.pulseras.api.dto.*;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.exception.AuthenticationException;
@@ -7,6 +8,7 @@ import com.pulseras.api.mapper.AccountMapper;
 import com.pulseras.api.entity.Account;
 import com.pulseras.api.repository.AccountRepository;
 import com.pulseras.api.repository.RoleRepository;
+import com.pulseras.api.util.GoogleTokenVerifier;
 import com.pulseras.api.util.JwtUtil;
 import com.pulseras.api.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class AccountServiceImpl implements AccountService {
     private final RoleRepository roleRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
     @Override
     public AccountDTO getAccountById(String id) {
@@ -137,7 +140,7 @@ public class AccountServiceImpl implements AccountService {
                         .email(email)
                         .username(email)
                         .password(passwordEncoder.encode(sub))
-                        .roleId("USER")
+                        .roleId(roleRepository.findByRoleName("Customer").orElseThrow().getId().toString())
                         .status(1)
                         .createDate(LocalDateTime.now())
                         .lastEdited(LocalDateTime.now())

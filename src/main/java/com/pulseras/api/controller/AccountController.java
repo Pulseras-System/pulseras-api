@@ -52,4 +52,9 @@ public class AccountController {
         String roleId = accountService.getRoleByAccountId(id);
         return ResponseEntity.ok(roleId);
     }
+
+    @PostMapping("/auth/google")
+    public ResponseEntity<LoginResponseDTO> googleLogin(@RequestBody GoogleLoginRequestDTO request) {
+        return ResponseEntity.ok(accountService.googleLogin(request));
+    }
 }
