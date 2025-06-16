@@ -6,6 +6,7 @@ import com.pulseras.api.exception.AuthenticationException;
 import com.pulseras.api.mapper.AccountMapper;
 import com.pulseras.api.entity.Account;
 import com.pulseras.api.repository.AccountRepository;
+import com.pulseras.api.repository.RoleRepository;
 import com.pulseras.api.util.JwtUtil;
 import com.pulseras.api.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository repository;
+    private final RoleRepository roleRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -44,6 +46,7 @@ public class AccountServiceImpl implements AccountService {
         entity.setPassword(passwordEncoder.encode(dto.getPassword()));
         entity.setCreateDate(LocalDateTime.now());
         entity.setLastEdited(LocalDateTime.now());
+        entity.setRoleId(roleRepository.findByRoleName("Customer").orElseThrow().getId().toString());
         Account saved = repository.save(entity);
         return AccountMapper.toDTO(saved);
     }
