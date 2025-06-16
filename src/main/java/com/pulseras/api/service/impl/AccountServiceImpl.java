@@ -117,4 +117,43 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
         return account.getRoleId();
     }
+
+    @Override
+    public LoginResponseDTO googleLogin(GoogleLoginRequestDTO request) {
+        try {
+            GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getIdToken());
+
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+            String sub = payload.getSubject();
+
+            // Try to find account by email
+            Account account = repository.findByEmail(email).orElse(null);
+
+            if (account == null) {
+                // Auto create new account
+                account = Account.builder()
+                        .fullName(name)
+                        .email(email)
+                        .username(email)
+                        .password(passwordEncoder.encode(sub))
+                        .roleId("USER")
+                        .status(1)
+                        .createDate(LocalDateTime.now())
+                        .lastEdited(LocalDateTime.now())
+                        .build();
+                account = repository.save(account);
+            }
+
+            String token = jwtUtil.generateToken(account.getUsername());
+            return LoginResponseDTO.builder()
+                    .token(token)
+                    .account(AccountMapper.toDTO(account))
+                    .build();
+
+        } catch (Exception e) {
+            throw new AuthenticationException("Google login failed: " + e.getMessage());
+        }
+    }
+
 }

@@ -13,4 +13,5 @@ public interface AccountService {
     LoginResponseDTO login(LoginRequestDTO loginRequest);
     AccountDTO signUp(CreateAccountDTO createAccountDTO);
     String getRoleByAccountId(String id);
+    LoginResponseDTO googleLogin(GoogleLoginRequestDTO request);
 }
