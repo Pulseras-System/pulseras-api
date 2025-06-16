@@ -1,11 +1,13 @@
 package com.pulseras.api.service.impl;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.pulseras.api.dto.*;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.exception.AuthenticationException;
 import com.pulseras.api.mapper.AccountMapper;
 import com.pulseras.api.entity.Account;
 import com.pulseras.api.repository.AccountRepository;
+import com.pulseras.api.util.GoogleTokenVerifier;
 import com.pulseras.api.util.JwtUtil;
 import com.pulseras.api.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository repository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final GoogleTokenVerifier googleTokenVerifier;
+
 
     @Override
     public AccountDTO getAccountById(String id) {
@@ -114,4 +118,43 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
         return account.getRoleId();
     }
+
+    @Override
+    public LoginResponseDTO googleLogin(GoogleLoginRequestDTO request) {
+        try {
+            GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getIdToken());
+
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+            String sub = payload.getSubject();
+
+            // Try to find account by email
+            Account account = repository.findByEmail(email).orElse(null);
+
+            if (account == null) {
+                // Auto create new account
+                account = Account.builder()
+                        .fullName(name)
+                        .email(email)
+                        .username(email)
+                        .password(passwordEncoder.encode(sub))
+                        .roleId("USER")
+                        .status(1)
+                        .createDate(LocalDateTime.now())
+                        .lastEdited(LocalDateTime.now())
+                        .build();
+                account = repository.save(account);
+            }
+
+            String token = jwtUtil.generateToken(account.getUsername());
+            return LoginResponseDTO.builder()
+                    .token(token)
+                    .account(AccountMapper.toDTO(account))
+                    .build();
+
+        } catch (Exception e) {
+            throw new AuthenticationException("Google login failed: " + e.getMessage());
+        }
+    }
+
 }
