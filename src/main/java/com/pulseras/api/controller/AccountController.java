@@ -15,16 +15,6 @@ public class AccountController {
 
     private final AccountService accountService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<AccountDTO> signUp(@RequestBody CreateAccountDTO dto) {
-        return ResponseEntity.ok(accountService.signUp(dto));
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
-        return ResponseEntity.ok(accountService.login(loginRequest));
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<AccountDTO> getById(@PathVariable String id) {
         return ResponseEntity.ok(accountService.getAccountById(id));
@@ -53,8 +43,5 @@ public class AccountController {
         return ResponseEntity.ok(roleId);
     }
 
-    @PostMapping("/auth/google")
-    public ResponseEntity<LoginResponseDTO> googleLogin(@RequestBody GoogleLoginRequestDTO request) {
-        return ResponseEntity.ok(accountService.googleLogin(request));
-    }
+
 }

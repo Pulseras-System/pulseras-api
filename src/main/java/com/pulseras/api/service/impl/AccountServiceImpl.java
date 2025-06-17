@@ -1,6 +1,8 @@
 package com.pulseras.api.service.impl;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import com.pulseras.api.dto.*;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.exception.AuthenticationException;
@@ -124,11 +126,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public LoginResponseDTO googleLogin(GoogleLoginRequestDTO request) {
         try {
-            GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getIdToken());
+            // 1. Verify token bằng Firebase
+            FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(request.getIdToken());
 
-            String email = payload.getEmail();
-            String name = (String) payload.get("name");
-            String sub = payload.getSubject();
+            String email = firebaseToken.getEmail();
+            String name = (String) firebaseToken.getClaims().get("name");
+//            String sub = payload.getSubject();
 
             // Try to find account by email
             Account account = repository.findByEmail(email).orElse(null);
@@ -139,7 +142,7 @@ public class AccountServiceImpl implements AccountService {
                         .fullName(name)
                         .email(email)
                         .username(email)
-                        .password(passwordEncoder.encode(sub))
+                        .password(passwordEncoder.encode(email))
                         .roleId(roleRepository.findByRoleName("Customer").orElseThrow().getId().toString())
                         .status(1)
                         .createDate(LocalDateTime.now())
@@ -149,6 +152,7 @@ public class AccountServiceImpl implements AccountService {
             }
 
             String token = jwtUtil.generateToken(account.getUsername());
+
             return LoginResponseDTO.builder()
                     .token(token)
                     .account(AccountMapper.toDTO(account))
