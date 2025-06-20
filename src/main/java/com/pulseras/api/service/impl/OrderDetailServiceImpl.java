@@ -12,6 +12,7 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,5 +71,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetail orderDetail = repository.findFirstByOrderId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Detail not found for order ID: " + orderId));
         return OrderDetailMapper.toDTO(orderDetail);
+    }
+
+    @Override
+    public List<OrderDetailDTO> getAllOrderDetailsByOrderId(String orderId){
+        List<OrderDetail> orderDetails = repository.findByOrderId(orderId);
+        return orderDetails.stream().map(OrderDetailMapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public int countOrderDetailsByOrderId(String orderId){
+        return repository.findByOrderId(orderId).size();
     }
 }

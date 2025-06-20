@@ -4,6 +4,7 @@ import com.pulseras.api.dto.CreateOrderDetailDTO;
 import com.pulseras.api.dto.OrderDetailDTO;
 import com.pulseras.api.service.OrderDetailService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,8 +44,13 @@ public class OrderDetailController {
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<OrderDetailDTO> getOrderDetailByOrderId(@PathVariable String orderId) {
-        OrderDetailDTO orderDetail = service.getOrderDetailByOrderId(orderId);
-        return ResponseEntity.ok(orderDetail);
+    public List<OrderDetailDTO> getOrderDetailByOrderId(@PathVariable String orderId) {
+        List<OrderDetailDTO> orderDetail = service.getAllOrderDetailsByOrderId(orderId);
+        return orderDetail;
+    }
+
+    @GetMapping("/amount/{id}")
+    public ResponseEntity<Integer> getAmountByOrderId(@PathVariable String id) {
+        return ResponseEntity.ok(service.countOrderDetailsByOrderId(id));
     }
 }

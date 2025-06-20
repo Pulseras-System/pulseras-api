@@ -41,4 +41,9 @@ public class OrderController {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/account/{id}")
+    public List<OrderDTO> getOrdersByAccountId(@PathVariable String id) {
+        return orderService.getOrdersByAccountId(id);
+    }
 }

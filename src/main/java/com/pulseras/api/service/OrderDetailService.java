@@ -11,5 +11,7 @@ public interface OrderDetailService {
     OrderDetailDTO createOrderDetail(CreateOrderDetailDTO dto);
     OrderDetailDTO updateOrderDetail(String id, CreateOrderDetailDTO dto);
     void deleteOrderDetail(String id);
+    List<OrderDetailDTO> getAllOrderDetailsByOrderId(String orderId);
     OrderDetailDTO getOrderDetailByOrderId(String orderId);
+    int countOrderDetailsByOrderId(String orderId);
 }

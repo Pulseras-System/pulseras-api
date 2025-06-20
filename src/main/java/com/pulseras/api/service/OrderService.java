@@ -11,4 +11,5 @@ public interface OrderService {
     OrderDTO createOrder(CreateOrderDTO dto);
     OrderDTO updateOrder(String id, CreateOrderDTO dto);
     void deleteOrder(String id);
+    List<OrderDTO> getOrdersByAccountId(String accountId);
 }

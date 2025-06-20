@@ -64,4 +64,11 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.deleteById(objId);
     }
+
+    @Override
+    public List<OrderDTO> getOrdersByAccountId(String accountId){
+        return orderRepository.findByAccountId(accountId).stream()
+                .map(OrderMapper::toDTO)
+                .collect(Collectors.toList());
+    }
 }
