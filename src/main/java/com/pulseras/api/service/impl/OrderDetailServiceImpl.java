@@ -12,6 +12,7 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public int countOrderDetailsByOrderId(String orderId){
-        return repository.findByOrderId(orderId).size();
+        return (int) repository.findByOrderId(orderId).stream()
+                .filter(orderDetail -> Objects.equals(orderDetail.getStatus(), 1))
+                .count();
     }
 }
