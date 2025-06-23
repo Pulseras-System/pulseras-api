@@ -4,6 +4,7 @@ import com.pulseras.api.dto.ProductDto;
 import com.pulseras.api.dto.CreateProductDto;
 import com.pulseras.api.service.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,4 +51,10 @@ public class ProductController {
     public void delete(@PathVariable String id) {
         service.delete(id);
     }
+
+    @GetMapping("/type-distribution")
+    public ResponseEntity<List<Map<String, Object>>> getProductTypeDistribution() {
+        return ResponseEntity.ok(service.getProductTypeDistribution());
+    }
+
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -43,5 +44,9 @@ public class AccountController {
         return ResponseEntity.ok(roleId);
     }
 
+    @GetMapping("/total-customers")
+    public ResponseEntity<Map<String, Object>> totalCustomers() {
+        return ResponseEntity.ok(accountService.totalCustomersWithCompare());
+    }
 
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -46,4 +47,25 @@ public class OrderController {
     public List<OrderDTO> getOrdersByAccountId(@PathVariable String id) {
         return orderService.getOrdersByAccountId(id);
     }
+
+    @GetMapping("/revenue")
+    public ResponseEntity<Map<String, Object>> totalRevenue() {
+        return ResponseEntity.ok(orderService.totalRevenueWithCompare());
+    }
+
+    @GetMapping("/total-orders")
+    public ResponseEntity<Map<String, Object>> totalOrders() {
+        return ResponseEntity.ok(orderService.totalOrdersWithCompare());
+    }
+
+    @GetMapping("/growth")
+    public ResponseEntity<Map<String, Object>> totalGrowth() {
+        return ResponseEntity.ok(orderService.totalGrowthWithCompare());
+    }
+
+    @GetMapping("/weekly-overview")
+    public ResponseEntity<?> getWeeklyOverview() {
+        return ResponseEntity.ok(orderService.getWeeklyOverview());
+    }
+
 }

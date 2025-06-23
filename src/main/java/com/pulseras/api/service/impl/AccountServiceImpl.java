@@ -18,8 +18,13 @@ import org.bson.types.ObjectId;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -162,5 +167,53 @@ public class AccountServiceImpl implements AccountService {
             throw new AuthenticationException("Google login failed: " + e.getMessage());
         }
     }
+
+    @Override
+    public Map<String, Object> totalCustomersWithCompare() {
+        LocalDate today = LocalDate.now();
+        LocalDate startOfThisWeek = today.with(DayOfWeek.MONDAY);
+        LocalDate startOfLastWeek = startOfThisWeek.minusWeeks(1);
+        LocalDate endOfLastWeek = startOfThisWeek.minusDays(1);
+
+        LocalDateTime startThisWeek = startOfThisWeek.atStartOfDay();
+        LocalDateTime startLastWeek = startOfLastWeek.atStartOfDay();
+        LocalDateTime endLastWeek = endOfLastWeek.atTime(LocalTime.MAX);
+
+        // ✅ Tổng số khách hàng (role = 1)
+        long totalCustomers = repository.findAll()
+                .stream()
+                .filter(acc -> acc.getRoleId().equals(roleRepository.findByRoleName("Customer").orElseThrow().getId().toString()))
+                .count();
+
+        // ✅ Tuần này
+        long thisWeekCustomers = repository.findByCreateDateBetween(startThisWeek, LocalDateTime.now())
+                .stream()
+                .filter(acc -> acc.getRoleId().equals(roleRepository.findByRoleName("Customer").orElseThrow().getId().toString()))
+                .count();
+
+        // ✅ Tuần trước
+        long lastWeekCustomers = repository.findByCreateDateBetween(startLastWeek, endLastWeek)
+                .stream()
+                .filter(acc -> acc.getRoleId().equals(roleRepository.findByRoleName("Customer").orElseThrow().getId().toString()))
+                .count();
+
+        // ✅ Tính phần trăm thay đổi
+        double percentChange = 0;
+        if (lastWeekCustomers > 0) {
+            percentChange = ((double) (thisWeekCustomers - lastWeekCustomers) / lastWeekCustomers) * 100;
+        } else if (thisWeekCustomers > 0) {
+            percentChange = 100;
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalCustomers", totalCustomers);
+        result.put("thisWeekCustomers", thisWeekCustomers);
+        result.put("lastWeekCustomers", lastWeekCustomers);
+        result.put("percentChange", percentChange);
+        result.put("isIncrease", thisWeekCustomers >= lastWeekCustomers);
+
+        return result;
+    }
+
 
 }

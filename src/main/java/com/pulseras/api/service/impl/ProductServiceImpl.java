@@ -3,25 +3,31 @@ package com.pulseras.api.service.impl;
 import com.pulseras.api.dto.ProductDto;
 import com.pulseras.api.dto.CreateProductDto;
 import com.pulseras.api.entity.Product;
+import com.pulseras.api.entity.Category;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.ProductMapper;
+import com.pulseras.api.repository.CategoryRepository;
 import com.pulseras.api.repository.ProductRepository;
+import com.pulseras.api.service.CategoryService;
 import com.pulseras.api.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
+    private final CategoryRepository categoryRepository;
 
-    public ProductServiceImpl(ProductRepository repository) {
-        this.repository = repository;
-    }
 
     @Override
     public Map<String, Object> getAll(String keyword, String categoryId, int page, int size, String sort) {
@@ -96,4 +102,42 @@ public class ProductServiceImpl implements ProductService {
         }
         repository.deleteById(id);
     }
+
+    @Override
+    public List<Map<String, Object>> getProductTypeDistribution() {
+        List<Product> products = repository.findAll()
+                .stream()
+                .filter(p -> p.getStatus() != 0)
+                .collect(Collectors.toList());
+
+        // Đếm số lượng theo categoryId
+        Map<String, Integer> categoryCountMap = new HashMap<>();
+        for (Product product : products) {
+            for (String categoryId : product.getCategoryIds()) {
+                categoryCountMap.merge(categoryId, 1, Integer::sum);
+            }
+        }
+
+        // Map từ categoryId -> categoryName
+        Map<String, String> categoryNameMap = categoryRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(Category::getCategoryId, Category::getCategoryName));
+
+        // Trả về list map {"label": categoryName, "value": count}
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Map.Entry<String, Integer> entry : categoryCountMap.entrySet()) {
+            String categoryId = entry.getKey();
+            Integer count = entry.getValue();
+            String name = categoryNameMap.getOrDefault(categoryId, "Unknown");
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("label", name);
+            item.put("value", count);
+            result.add(item);
+        }
+
+        return result;
+    }
+
 }

@@ -12,4 +12,5 @@ public interface ProductService {
     void create(CreateProductDto dto);
     void update(String id, CreateProductDto dto);
     void delete(String id);
+    List<Map<String, Object>> getProductTypeDistribution();
 }

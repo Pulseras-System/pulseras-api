@@ -3,6 +3,7 @@ package com.pulseras.api.service;
 import com.pulseras.api.dto.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AccountService {
     AccountDTO getAccountById(String id);
@@ -14,4 +15,5 @@ public interface AccountService {
     AccountDTO signUp(CreateAccountDTO createAccountDTO);
     String getRoleByAccountId(String id);
     LoginResponseDTO googleLogin(GoogleLoginRequestDTO request);
+    Map<String, Object> totalCustomersWithCompare();
 }
