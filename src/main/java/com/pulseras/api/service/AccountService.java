@@ -16,4 +16,6 @@ public interface AccountService {
     String getRoleByAccountId(String id);
     LoginResponseDTO googleLogin(GoogleLoginRequestDTO request);
     Map<String, Object> totalCustomersWithCompare();
+    void requestPasswordReset(PasswordResetDTO dto);
+    void resetPassword(ResetPasswordDTO dto);
 }
