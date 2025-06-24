@@ -32,7 +32,7 @@ public class OrderDetailController {
         return ResponseEntity.ok(service.createOrderDetail(dto));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<OrderDetailDTO> update(@PathVariable String id, @RequestBody CreateOrderDetailDTO dto) {
         return ResponseEntity.ok(service.updateOrderDetail(id, dto));
     }

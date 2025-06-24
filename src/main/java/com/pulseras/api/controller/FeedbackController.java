@@ -38,7 +38,7 @@ public class FeedbackController {
         service.create(dto);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public void update(@PathVariable String id, @Valid @RequestBody CreateFeedbackDto dto) {
         service.update(id, dto);
     }

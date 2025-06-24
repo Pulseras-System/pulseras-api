@@ -4,16 +4,20 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.pulseras.api.dto.*;
+import com.pulseras.api.entity.PasswordResetToken;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.exception.AuthenticationException;
 import com.pulseras.api.mapper.AccountMapper;
 import com.pulseras.api.entity.Account;
 import com.pulseras.api.repository.AccountRepository;
+import com.pulseras.api.repository.PasswordResetTokenRepository;
 import com.pulseras.api.repository.RoleRepository;
+import com.pulseras.api.service.EmailService;
 import com.pulseras.api.util.GoogleTokenVerifier;
 import com.pulseras.api.util.JwtUtil;
 import com.pulseras.api.service.AccountService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.bson.types.ObjectId;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +41,10 @@ public class AccountServiceImpl implements AccountService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final GoogleTokenVerifier googleTokenVerifier;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
+    @Value("${reset.token.expiry}")
+    private int tokenExpiryMinutes;
 
     @Override
     public AccountDTO getAccountById(String id) {
@@ -213,6 +222,52 @@ public class AccountServiceImpl implements AccountService {
         result.put("isIncrease", thisWeekCustomers >= lastWeekCustomers);
 
         return result;
+    }
+
+    @Override
+    public void requestPasswordReset(PasswordResetDTO dto) {
+        Account account = repository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with email: " + dto.getEmail()));
+
+        passwordResetTokenRepository.deleteByAccountId(account.getId());
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .accountId(account.getId())
+                .expiryDate(LocalDateTime.now().plusMinutes(tokenExpiryMinutes))
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+
+        // Send email with reset link
+        try {
+            emailService.sendPasswordResetEmail(account.getEmail(), token);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send reset email: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordDTO dto) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(dto.getToken())
+                .orElseThrow(() -> new AuthenticationException("Invalid or expired reset token"));
+
+        if (resetToken.isExpired()) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new AuthenticationException("Reset token has expired");
+        }
+
+        Account account = repository.findById(resetToken.getAccountId())
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+
+        // Update password
+        account.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        account.setLastEdited(LocalDateTime.now());
+        repository.save(account);
+
+        // Delete the used token
+        passwordResetTokenRepository.delete(resetToken);
     }
 
 

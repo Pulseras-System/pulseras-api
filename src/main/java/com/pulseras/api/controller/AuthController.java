@@ -4,10 +4,7 @@ import com.pulseras.api.dto.*;
 import com.pulseras.api.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,5 +26,16 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<LoginResponseDTO> googleLogin(@RequestBody GoogleLoginRequestDTO request) {
         return ResponseEntity.ok(accountService.googleLogin(request));
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody PasswordResetDTO dto) {
+        accountService.requestPasswordReset(dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordDTO dto) {
+        accountService.resetPassword(dto);
+        return ResponseEntity.ok().build();
     }
 }

@@ -38,7 +38,7 @@ public class PromotionController {
         service.create(dto);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public void update(@PathVariable String id, @Valid @RequestBody CreatePromotionDto dto) {
         service.update(id, dto);
     }

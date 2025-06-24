@@ -33,7 +33,7 @@ public class CategoryController {
         service.create(dto);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public void update(@PathVariable String id, @Valid @RequestBody CreateCategoryDto dto) {
         service.update(id, dto);
     }

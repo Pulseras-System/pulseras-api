@@ -42,7 +42,7 @@ public class ProductController {
         service.create(dto);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public void update(@PathVariable String id, @Valid @RequestBody CreateProductDto dto) {
         service.update(id, dto);
     }
