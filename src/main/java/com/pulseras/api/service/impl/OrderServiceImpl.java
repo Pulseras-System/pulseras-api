@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -252,6 +249,78 @@ public class OrderServiceImpl implements OrderService {
 
         return result;
     }
+
+    @Override
+    public List<Map<String, Object>> getMonthlyOverview() {
+        LocalDate today = LocalDate.now();
+        YearMonth currentMonth = YearMonth.from(today);
+        int daysInMonth = currentMonth.lengthOfMonth();
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (int day = 1; day <= daysInMonth; day++) {
+            LocalDate currentDate = currentMonth.atDay(day);
+            LocalDateTime startOfDay = currentDate.atStartOfDay();
+            LocalDateTime endOfDay = currentDate.atTime(LocalTime.MAX);
+
+            long orderCount = orderRepository
+                    .findByCreateDateBetween(startOfDay, endOfDay)
+                    .stream()
+                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .count();
+
+            BigDecimal revenue = orderRepository
+                    .findByCreateDateBetween(startOfDay, endOfDay)
+                    .stream()
+                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Map<String, Object> dayData = new HashMap<>();
+            dayData.put("day", currentDate.getDayOfMonth()); // 1 -> 31
+            dayData.put("orderCount", orderCount);
+            dayData.put("revenue", revenue);
+
+            result.add(dayData);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> getYearlyOverview() {
+        int currentYear = Year.now().getValue();
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (int month = 1; month <= 12; month++) {
+            YearMonth currentMonth = YearMonth.of(currentYear, month);
+            LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
+            LocalDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(LocalTime.MAX);
+
+            long orderCount = orderRepository
+                    .findByCreateDateBetween(startOfMonth, endOfMonth)
+                    .stream()
+                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .count();
+
+            BigDecimal revenue = orderRepository
+                    .findByCreateDateBetween(startOfMonth, endOfMonth)
+                    .stream()
+                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Map<String, Object> monthData = new HashMap<>();
+            monthData.put("month", "T" + month); // T1 -> T12
+            monthData.put("orderCount", orderCount);
+            monthData.put("revenue", revenue);
+
+            result.add(monthData);
+        }
+
+        return result;
+    }
+
 
 
 

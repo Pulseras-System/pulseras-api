@@ -68,4 +68,14 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getWeeklyOverview());
     }
 
+    @GetMapping("/monthly-overview")
+    public ResponseEntity<?> getMonthlyOverview() {
+        return ResponseEntity.ok(orderService.getMonthlyOverview());
+    }
+
+    @GetMapping("/yearly-overview")
+    public ResponseEntity<?> getYearlyOverview() {
+        return ResponseEntity.ok(orderService.getYearlyOverview());
+    }
+
 }

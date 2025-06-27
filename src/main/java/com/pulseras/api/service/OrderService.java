@@ -17,4 +17,6 @@ public interface OrderService {
     Map<String, Object> totalOrdersWithCompare();
     Map<String, Object> totalGrowthWithCompare();
     List<Map<String, Object>> getWeeklyOverview();
+    List<Map<String, Object>> getMonthlyOverview();
+    List<Map<String, Object>> getYearlyOverview();
 }
