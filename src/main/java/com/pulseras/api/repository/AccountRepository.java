@@ -18,4 +18,5 @@ public interface AccountRepository extends MongoRepository<Account, ObjectId> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     List<Account> findByCreateDateBetween(LocalDateTime start, LocalDateTime end);
+    List<Account> findAllByRoleId(String roleId);
 }

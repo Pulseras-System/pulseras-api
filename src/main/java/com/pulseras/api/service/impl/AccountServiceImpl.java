@@ -4,12 +4,14 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.pulseras.api.dto.*;
+import com.pulseras.api.entity.Order;
 import com.pulseras.api.entity.PasswordResetToken;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.exception.AuthenticationException;
 import com.pulseras.api.mapper.AccountMapper;
 import com.pulseras.api.entity.Account;
 import com.pulseras.api.repository.AccountRepository;
+import com.pulseras.api.repository.OrderRepository;
 import com.pulseras.api.repository.PasswordResetTokenRepository;
 import com.pulseras.api.repository.RoleRepository;
 import com.pulseras.api.service.EmailService;
@@ -38,6 +40,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository repository;
     private final RoleRepository roleRepository;
+    private final OrderRepository orderRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final GoogleTokenVerifier googleTokenVerifier;
@@ -270,5 +273,25 @@ public class AccountServiceImpl implements AccountService {
         passwordResetTokenRepository.delete(resetToken);
     }
 
+    @Override
+    public List<AccountDTO> getAccountsByRole(String role) {
+        var roleId = roleRepository.findByRoleName(role).orElseThrow(() -> new ResourceNotFoundException("Role not found")).getId().toString();
+        return repository.findAllByRoleId(roleId).stream().map(AccountMapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public int countOrdersByAccountId(String accountId) {
+        return orderRepository.findByAccountId(accountId).stream().filter(order -> order.getStatus() != 0 && order.getStatus() != 1).toList().size();
+    }
+
+    @Override
+    public int countTotalSpent(String accountId) {
+        var orders = orderRepository.findByAccountId(accountId).stream().filter(order -> order.getStatus() != 0 && order.getStatus() != 1).toList();
+        int totalSpent = 0;
+        for (Order order : orders) {
+            totalSpent += order.getTotalPrice();
+        }
+        return totalSpent;
+    }
 
 }

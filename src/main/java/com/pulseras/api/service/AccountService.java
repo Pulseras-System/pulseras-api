@@ -18,4 +18,7 @@ public interface AccountService {
     Map<String, Object> totalCustomersWithCompare();
     void requestPasswordReset(PasswordResetDTO dto);
     void resetPassword(ResetPasswordDTO dto);
+    List<AccountDTO> getAccountsByRole(String role);
+    int countOrdersByAccountId(String accountId);
+    int countTotalSpent(String accountId);
 }

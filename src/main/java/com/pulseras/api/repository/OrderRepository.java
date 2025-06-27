@@ -12,4 +12,5 @@ import java.util.List;
 public interface OrderRepository extends MongoRepository<Order, ObjectId> {
     List<Order> findByAccountId(String accountId);
     List<Order> findByCreateDateBetween(LocalDateTime start, LocalDateTime end);
+//    int countByAccountId(String accountId);
 }

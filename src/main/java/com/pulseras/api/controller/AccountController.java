@@ -3,6 +3,7 @@ package com.pulseras.api.controller;
 import com.pulseras.api.dto.*;
 import com.pulseras.api.service.AccountService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,4 +50,18 @@ public class AccountController {
         return ResponseEntity.ok(accountService.totalCustomersWithCompare());
     }
 
+    @GetMapping("/roles")
+    public ResponseEntity<List<AccountDTO>> getByRole(@RequestParam String role) {
+        return ResponseEntity.ok(accountService.getAccountsByRole(role));
+    }
+
+    @GetMapping("count/orders")
+    public ResponseEntity<Integer> totalOrders(@RequestParam String id) {
+        return ResponseEntity.ok(accountService.countOrdersByAccountId(id));
+    }
+
+    @GetMapping("count/total-spent")
+    public ResponseEntity<Integer> totalSpent(@RequestParam String id) {
+        return ResponseEntity.ok(accountService.countTotalSpent(id));
+    }
 }
