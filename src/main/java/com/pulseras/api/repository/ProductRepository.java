@@ -18,4 +18,6 @@ public interface ProductRepository extends MongoRepository<Product, String> {
             String keyword,
             Pageable pageable
     );
+
+    List<Product> findTop6ByOrderByCreateDateDesc();
 }

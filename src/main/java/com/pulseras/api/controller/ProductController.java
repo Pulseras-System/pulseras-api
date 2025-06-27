@@ -57,4 +57,14 @@ public class ProductController {
         return ResponseEntity.ok(service.getProductTypeDistribution());
     }
 
+    @GetMapping("/top-buy-products")
+    public ResponseEntity<List<ProductDto>> getTopBuyProducts() {
+        return ResponseEntity.ok(service.getTopBuyProducts());
+    }
+
+    @GetMapping("/latest-products")
+    public ResponseEntity<List<ProductDto>> getLatestProducts() {
+        return ResponseEntity.ok(service.getLatestProducts());
+    }
+
 }

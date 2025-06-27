@@ -2,23 +2,24 @@ package com.pulseras.api.service.impl;
 
 import com.pulseras.api.dto.ProductDto;
 import com.pulseras.api.dto.CreateProductDto;
+import com.pulseras.api.entity.OrderDetail;
 import com.pulseras.api.entity.Product;
 import com.pulseras.api.entity.Category;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.ProductMapper;
 import com.pulseras.api.repository.CategoryRepository;
+import com.pulseras.api.repository.OrderDetailRepository;
+import com.pulseras.api.repository.OrderRepository;
 import com.pulseras.api.repository.ProductRepository;
 import com.pulseras.api.service.CategoryService;
+import com.pulseras.api.service.OrderDetailService;
 import com.pulseras.api.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +28,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
 
     @Override
@@ -139,5 +141,36 @@ public class ProductServiceImpl implements ProductService {
 
         return result;
     }
+
+    @Override
+    public List<ProductDto> getTopBuyProducts() {
+        Map<String, Long> productCount = orderDetailRepository.findAll().stream()
+                .filter(orderDetail -> orderDetail.getStatus() != null && orderDetail.getStatus() != 0)
+                .filter(orderDetail -> orderDetail.getProductId() != null && orderDetail.getProductId() != null)
+                .collect(Collectors.groupingBy(
+                        orderDetail -> orderDetail.getProductId(),
+                        Collectors.counting()
+                ));
+
+        return productCount.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(6)
+                .map(entry -> {
+                    Product product = repository.findById(entry.getKey()).orElse(null);
+                    return product != null ? ProductMapper.toDto(product) : null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductDto> getLatestProducts() {
+        List<Product> products = repository.findTop6ByOrderByCreateDateDesc();
+
+        return products.stream()
+                .map(ProductMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 
 }

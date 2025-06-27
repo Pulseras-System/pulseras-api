@@ -13,4 +13,6 @@ public interface ProductService {
     void update(String id, CreateProductDto dto);
     void delete(String id);
     List<Map<String, Object>> getProductTypeDistribution();
+    List<ProductDto> getTopBuyProducts();
+    List<ProductDto> getLatestProducts();
 }

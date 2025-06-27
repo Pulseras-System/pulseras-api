@@ -223,20 +223,17 @@ public class OrderServiceImpl implements OrderService {
 
         List<Map<String, Object>> result = new ArrayList<>();
 
-        // Duyệt từ T2 đến CN
         for (int i = 0; i < 7; i++) {
             LocalDate currentDay = monday.plusDays(i);
             LocalDateTime startOfDay = currentDay.atStartOfDay();
             LocalDateTime endOfDay = currentDay.atTime(LocalTime.MAX);
 
-            // Đếm số đơn hàng trong ngày (status khác 0 và 1)
             long orderCount = orderRepository
                     .findByCreateDateBetween(startOfDay, endOfDay)
                     .stream()
                     .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
                     .count();
 
-            // Tính doanh thu trong ngày
             BigDecimal revenue = orderRepository
                     .findByCreateDateBetween(startOfDay, endOfDay)
                     .stream()
@@ -245,7 +242,8 @@ public class OrderServiceImpl implements OrderService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             Map<String, Object> dayData = new HashMap<>();
-            dayData.put("day", "T" + (i + 2 > 8 ? "CN" : (i + 2))); // T2, T3,... CN
+            String dayLabel = (i == 6) ? "CN" : "T" + (i + 2);
+            dayData.put("day", dayLabel);
             dayData.put("orderCount", orderCount);
             dayData.put("revenue", revenue);
 
@@ -254,6 +252,7 @@ public class OrderServiceImpl implements OrderService {
 
         return result;
     }
+
 
 
 }
