@@ -31,7 +31,7 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.createNotification(dto));
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<NotificationDTO> update(@PathVariable String id, @RequestBody CreateNotificationDTO dto) {
         return ResponseEntity.ok(notificationService.updateNotification(id, dto));
     }

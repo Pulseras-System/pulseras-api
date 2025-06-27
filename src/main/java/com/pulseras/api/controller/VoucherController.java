@@ -31,7 +31,7 @@ public class VoucherController {
         return ResponseEntity.ok(service.createVoucher(dto));
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<VoucherDTO> update(@PathVariable String id, @RequestBody CreateVoucherDTO dto) {
         return ResponseEntity.ok(service.updateVoucher(id, dto));
     }

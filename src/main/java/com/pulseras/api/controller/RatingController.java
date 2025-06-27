@@ -38,7 +38,7 @@ public class RatingController {
         service.create(dto);
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public void update(@PathVariable String id, @Valid @RequestBody CreateRatingDto dto) {
         service.update(id, dto);
     }

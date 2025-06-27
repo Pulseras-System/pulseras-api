@@ -36,7 +36,7 @@ public class RoleController {
         return ResponseEntity.ok(roleService.createRole(dto));
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<RoleDTO> update(@PathVariable String id, @RequestBody CreateRoleDTO dto) {
         return ResponseEntity.ok(roleService.updateRole(id, dto));
     }
