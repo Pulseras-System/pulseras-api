@@ -9,8 +9,8 @@ import java.util.Map;
 public interface ProductService {
     Map<String, Object> getAll(String keyword, String categoryId, int page, int size, String sort);
     ProductDto getById(String id);
-    void create(CreateProductDto dto);
-    void update(String id, CreateProductDto dto);
+    ProductDto create(CreateProductDto dto);
+    ProductDto update(String id, CreateProductDto dto);
     void delete(String id);
     List<Map<String, Object>> getProductTypeDistribution();
     List<ProductDto> getTopBuyProducts();
