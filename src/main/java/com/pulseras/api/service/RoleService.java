@@ -2,6 +2,7 @@ package com.pulseras.api.service;
 
 import com.pulseras.api.dto.CreateRoleDTO;
 import com.pulseras.api.dto.RoleDTO;
+import com.pulseras.api.dto.UpdateRoleDTO;
 
 import java.util.List;
 
@@ -12,4 +13,5 @@ public interface RoleService {
     RoleDTO updateRole(String id, CreateRoleDTO dto);
     void deleteRole(String id);
     RoleDTO getRoleByRoleName(String roleName);
+    RoleDTO partialUpdateRole(String id, UpdateRoleDTO dto);
 }

@@ -2,6 +2,7 @@ package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.CreateRoleDTO;
 import com.pulseras.api.dto.RoleDTO;
+import com.pulseras.api.dto.UpdateRoleDTO;
 import com.pulseras.api.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -46,4 +47,9 @@ public class RoleController {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();
     }
+    @PatchMapping("/{id}")
+    public ResponseEntity<RoleDTO> partialUpdate(@PathVariable String id, @RequestBody UpdateRoleDTO dto) {
+        return ResponseEntity.ok(roleService.partialUpdateRole(id, dto));
+    }
+
 }

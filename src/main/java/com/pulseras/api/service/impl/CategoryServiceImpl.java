@@ -2,6 +2,7 @@ package com.pulseras.api.service.impl;
 
 import com.pulseras.api.dto.CategoryDto;
 import com.pulseras.api.dto.CreateCategoryDto;
+import com.pulseras.api.dto.UpdateCategoryDto;
 import com.pulseras.api.entity.Category;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.CategoryMapper;
@@ -62,4 +63,21 @@ public class CategoryServiceImpl implements CategoryService {
         }
         repository.deleteById(id);
     }
+
+    @Override
+    public void partialUpdate(String id, UpdateCategoryDto dto) {
+        Category category = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        if (dto.getCategoryName() != null) {
+            category.setCategoryName(dto.getCategoryName());
+        }
+        if (dto.getStatus() != null) {
+            category.setStatus(dto.getStatus());
+        }
+        category.setLastEdited(LocalDateTime.now());
+
+        repository.save(category);
+    }
+
 }

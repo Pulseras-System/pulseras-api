@@ -2,6 +2,7 @@ package com.pulseras.api.service;
 
 import com.pulseras.api.dto.CreateOrderDetailDTO;
 import com.pulseras.api.dto.OrderDetailDTO;
+import com.pulseras.api.dto.UpdateOrderDetailDTO;
 
 import java.util.List;
 
@@ -14,4 +15,6 @@ public interface OrderDetailService {
     List<OrderDetailDTO> getAllOrderDetailsByOrderId(String orderId);
     OrderDetailDTO getOrderDetailByOrderId(String orderId);
     int countOrderDetailsByOrderId(String orderId);
+    OrderDetailDTO partialUpdateOrderDetail(String id, UpdateOrderDetailDTO dto);
+
 }

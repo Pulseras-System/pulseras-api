@@ -2,6 +2,7 @@ package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.CreateOrderDTO;
 import com.pulseras.api.dto.OrderDTO;
+import com.pulseras.api.dto.UpdateOrderDTO;
 import com.pulseras.api.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -77,5 +78,11 @@ public class OrderController {
     public ResponseEntity<?> getYearlyOverview() {
         return ResponseEntity.ok(orderService.getYearlyOverview());
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<OrderDTO> partialUpdate(@PathVariable String id, @RequestBody UpdateOrderDTO dto) {
+        return ResponseEntity.ok(orderService.partialUpdateOrder(id, dto));
+    }
+
 
 }

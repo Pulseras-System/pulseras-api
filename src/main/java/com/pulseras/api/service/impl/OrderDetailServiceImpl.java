@@ -2,6 +2,7 @@ package com.pulseras.api.service.impl;
 
 import com.pulseras.api.dto.CreateOrderDetailDTO;
 import com.pulseras.api.dto.OrderDetailDTO;
+import com.pulseras.api.dto.UpdateOrderDetailDTO;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.OrderDetailMapper;
 import com.pulseras.api.entity.OrderDetail;
@@ -85,5 +86,23 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return (int) repository.findByOrderId(orderId).stream()
                 .filter(orderDetail -> Objects.equals(orderDetail.getStatus(), 1))
                 .count();
+    }
+    @Override
+    public OrderDetailDTO partialUpdateOrderDetail(String id, UpdateOrderDetailDTO dto) {
+        OrderDetail existing = repository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Order Detail not found with id: " + id));
+
+        if (dto.getProductId() != null) existing.setProductId(dto.getProductId());
+        if (dto.getQuantity() != null) existing.setQuantity(dto.getQuantity());
+        if (dto.getPrice() != null) existing.setPrice(dto.getPrice());
+        if (dto.getPromotionId() != null) existing.setPromotionId(dto.getPromotionId());
+        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+        if (dto.getLastEdited() != null) {
+            existing.setLastEdited(dto.getLastEdited());
+        } else {
+            existing.setLastEdited(java.time.LocalDateTime.now());
+        }
+
+        return OrderDetailMapper.toDTO(repository.save(existing));
     }
 }

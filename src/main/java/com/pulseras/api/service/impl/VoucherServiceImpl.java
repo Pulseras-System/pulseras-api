@@ -1,6 +1,7 @@
 package com.pulseras.api.service.impl;
 
 import com.pulseras.api.dto.CreateVoucherDTO;
+import com.pulseras.api.dto.UpdateVoucherDTO;
 import com.pulseras.api.dto.VoucherDTO;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.VoucherMapper;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,4 +68,22 @@ public class VoucherServiceImpl implements VoucherService {
         }
         repository.deleteById(objId);
     }
+    @Override
+    public VoucherDTO partialUpdateVoucher(String id, UpdateVoucherDTO dto) {
+        Voucher existing = repository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Voucher not found with id: " + id));
+
+        if (dto.getVoucherName() != null) existing.setVoucherName(dto.getVoucherName());
+        if (dto.getVoucherQuantity() != null) existing.setVoucherQuantity(dto.getVoucherQuantity());
+        if (dto.getMinPrice() != null) existing.setMinPrice(dto.getMinPrice());
+        if (dto.getMaxDiscount() != null) existing.setMaxDiscount(dto.getMaxDiscount());
+        if (dto.getDiscountPercentage() != null) existing.setDiscountPercentage(dto.getDiscountPercentage());
+        if (dto.getStartDay() != null) existing.setStartDay(dto.getStartDay());
+        if (dto.getExpireDay() != null) existing.setExpireDay(dto.getExpireDay());
+        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+        existing.setLastEdited(dto.getLastEdited() != null ? dto.getLastEdited() : LocalDateTime.now());
+
+        return VoucherMapper.toDTO(repository.save(existing));
+    }
+
 }

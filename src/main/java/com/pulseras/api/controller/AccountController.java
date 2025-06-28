@@ -64,4 +64,10 @@ public class AccountController {
     public ResponseEntity<Integer> totalSpent(@RequestParam String id) {
         return ResponseEntity.ok(accountService.countTotalSpent(id));
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<AccountDTO> partialUpdate(@PathVariable String id, @RequestBody UpdateAccountDTO dto) {
+        return ResponseEntity.ok(accountService.partialUpdateAccount(id, dto));
+    }
+
 }

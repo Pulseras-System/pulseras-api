@@ -293,5 +293,22 @@ public class AccountServiceImpl implements AccountService {
         }
         return totalSpent;
     }
+    @Override
+    public AccountDTO partialUpdateAccount(String id, UpdateAccountDTO dto) {
+        Account existing = repository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+
+        if (dto.getFullName() != null) existing.setFullName(dto.getFullName());
+        if (dto.getPhone() != null) existing.setPhone(dto.getPhone());
+        if (dto.getEmail() != null) existing.setEmail(dto.getEmail());
+        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        existing.setLastEdited(LocalDateTime.now());
+        Account updated = repository.save(existing);
+        return AccountMapper.toDTO(updated);
+    }
 
 }

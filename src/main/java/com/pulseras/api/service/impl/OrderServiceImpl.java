@@ -2,6 +2,7 @@ package com.pulseras.api.service.impl;
 
 import com.pulseras.api.dto.CreateOrderDTO;
 import com.pulseras.api.dto.OrderDTO;
+import com.pulseras.api.dto.UpdateOrderDTO;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.OrderMapper;
 import com.pulseras.api.entity.Order;
@@ -321,6 +322,21 @@ public class OrderServiceImpl implements OrderService {
         return result;
     }
 
+    @Override
+    public OrderDTO partialUpdateOrder(String id, UpdateOrderDTO dto) {
+        Order existing = orderRepository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        if (dto.getOrderInfor() != null) existing.setOrderInfor(dto.getOrderInfor());
+        if (dto.getAmount() != null) existing.setAmount(dto.getAmount());
+        if (dto.getVoucherId() != null) existing.setVoucherId(dto.getVoucherId());
+        if (dto.getTotalPrice() != null) existing.setTotalPrice(dto.getTotalPrice());
+        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+
+        existing.setLastEdited(java.time.LocalDateTime.now());
+
+        return OrderMapper.toDTO(orderRepository.save(existing));
+    }
 
 
 

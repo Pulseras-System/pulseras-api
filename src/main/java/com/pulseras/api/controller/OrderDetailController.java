@@ -2,6 +2,7 @@ package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.CreateOrderDetailDTO;
 import com.pulseras.api.dto.OrderDetailDTO;
+import com.pulseras.api.dto.UpdateOrderDetailDTO;
 import com.pulseras.api.service.OrderDetailService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -53,4 +54,10 @@ public class OrderDetailController {
     public ResponseEntity<Integer> getAmountByOrderId(@PathVariable String id) {
         return ResponseEntity.ok(service.countOrderDetailsByOrderId(id));
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<OrderDetailDTO> partialUpdate(@PathVariable String id, @RequestBody UpdateOrderDetailDTO dto) {
+        return ResponseEntity.ok(service.partialUpdateOrderDetail(id, dto));
+    }
+
 }

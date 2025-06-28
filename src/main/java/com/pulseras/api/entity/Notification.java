@@ -16,7 +16,7 @@ public class Notification {
     @Id
     private ObjectId id;
 
-    private Integer accountId;
+    private String accountId;
     private String message;
     private Integer status;
     private LocalDateTime lastEdited;

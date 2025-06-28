@@ -21,4 +21,5 @@ public interface AccountService {
     List<AccountDTO> getAccountsByRole(String role);
     int countOrdersByAccountId(String accountId);
     int countTotalSpent(String accountId);
+    AccountDTO partialUpdateAccount(String id, UpdateAccountDTO dto);
 }

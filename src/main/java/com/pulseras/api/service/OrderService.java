@@ -2,6 +2,7 @@ package com.pulseras.api.service;
 
 import com.pulseras.api.dto.CreateOrderDTO;
 import com.pulseras.api.dto.OrderDTO;
+import com.pulseras.api.dto.UpdateOrderDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -19,4 +20,5 @@ public interface OrderService {
     List<Map<String, Object>> getWeeklyOverview();
     List<Map<String, Object>> getMonthlyOverview();
     List<Map<String, Object>> getYearlyOverview();
+    OrderDTO partialUpdateOrder(String id, UpdateOrderDTO dto);
 }

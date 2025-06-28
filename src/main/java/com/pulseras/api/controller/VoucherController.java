@@ -1,6 +1,7 @@
 package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.CreateVoucherDTO;
+import com.pulseras.api.dto.UpdateVoucherDTO;
 import com.pulseras.api.dto.VoucherDTO;
 import com.pulseras.api.service.VoucherService;
 import lombok.RequiredArgsConstructor;
@@ -41,4 +42,10 @@ public class VoucherController {
         service.deleteVoucher(id);
         return ResponseEntity.noContent().build();
     }
+    @PatchMapping("/{id}")
+    public ResponseEntity<VoucherDTO> partialUpdate(@PathVariable String id,
+                                                    @RequestBody UpdateVoucherDTO dto) {
+        return ResponseEntity.ok(service.partialUpdateVoucher(id, dto));
+    }
+
 }

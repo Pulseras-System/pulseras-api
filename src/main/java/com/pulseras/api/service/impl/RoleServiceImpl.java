@@ -2,6 +2,7 @@ package com.pulseras.api.service.impl;
 
 import com.pulseras.api.dto.CreateRoleDTO;
 import com.pulseras.api.dto.RoleDTO;
+import com.pulseras.api.dto.UpdateRoleDTO;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.RoleMapper;
 import com.pulseras.api.entity.Role;
@@ -67,4 +68,16 @@ public class RoleServiceImpl implements RoleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with roleName: " + roleName));
         return RoleMapper.toDTO(role);
     }
+    @Override
+    public RoleDTO partialUpdateRole(String id, UpdateRoleDTO dto) {
+        Role existing = roleRepository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
+
+        if (dto.getRoleName() != null) existing.setRoleName(dto.getRoleName());
+        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+        existing.setLastEdited(dto.getLastEdited() != null ? dto.getLastEdited() : java.time.LocalDateTime.now());
+
+        return RoleMapper.toDTO(roleRepository.save(existing));
+    }
+
 }

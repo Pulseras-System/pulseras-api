@@ -2,6 +2,7 @@ package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.CreateNotificationDTO;
 import com.pulseras.api.dto.NotificationDTO;
+import com.pulseras.api.dto.UpdateNotificationDTO;
 import com.pulseras.api.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,5 +42,11 @@ public class NotificationController {
         notificationService.deleteNotification(id);
         return ResponseEntity.noContent().build();
     }
+    @PatchMapping("/{id}")
+    public ResponseEntity<NotificationDTO> partialUpdate(@PathVariable String id,
+                                                         @RequestBody UpdateNotificationDTO dto) {
+        return ResponseEntity.ok(notificationService.partialUpdateNotification(id, dto));
+    }
+
 }
 

@@ -2,6 +2,7 @@ package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.CategoryDto;
 import com.pulseras.api.dto.CreateCategoryDto;
+import com.pulseras.api.dto.UpdateCategoryDto;
 import com.pulseras.api.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -41,5 +42,10 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         service.delete(id);
+    }
+
+    @PatchMapping("/{id}")
+    public void partialUpdate(@PathVariable String id, @RequestBody UpdateCategoryDto dto) {
+        service.partialUpdate(id, dto);
     }
 }
