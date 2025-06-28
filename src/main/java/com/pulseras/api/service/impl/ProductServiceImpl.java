@@ -46,7 +46,6 @@ public class ProductServiceImpl implements ProductService {
         boolean hasKeyword = keyword != null && !keyword.isEmpty();
         boolean hasCategory = categoryId != null && !categoryId.isEmpty();
 
-        // Luôn lọc status = 1
         int ACTIVE = 1;
 
         if (hasCategory && hasKeyword) {
@@ -88,14 +87,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void create(CreateProductDto dto) {
+    public ProductDto create(CreateProductDto dto) {
         Product entity = ProductMapper.toEntity(dto);
         entity.setCreateDate(LocalDateTime.now());
-        repository.save(entity);
+        Product saved = repository.save(entity);
+        return ProductMapper.toDto(saved);
     }
 
     @Override
-    public void update(String id, CreateProductDto dto) {
+    public ProductDto update(String id, CreateProductDto dto) {
         Product existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -110,7 +110,8 @@ public class ProductServiceImpl implements ProductService {
         existing.setStatus(dto.getStatus());
         existing.setLastEdited(LocalDateTime.now());
 
-        repository.save(existing);
+        Product updated = repository.save(existing);
+        return ProductMapper.toDto(updated);
     }
 
     @Override
