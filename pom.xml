@@ -113,6 +113,33 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
+			<!-- AWS SDK for S3 -->
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>s3</artifactId>
+				<version>2.25.18</version>
+			</dependency>
+
+			<!-- AWS SDK Auth (credential providers) -->
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>auth</artifactId>
+				<version>2.25.18</version>
+			</dependency>
+
+			<!-- AWS Regions -->
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>regions</artifactId>
+				<version>2.25.18</version>
+			</dependency>
+
+			<!-- Optional: nếu dùng Netty (non-blocking I/O client) -->
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>netty-nio-client</artifactId>
+				<version>2.25.18</version>
+			</dependency>
 	</dependencies>
 
 	<build>
