@@ -83,6 +83,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderDTO partialUpdateOrder(String id, UpdateOrderDTO dto) {
+        Order existing = orderRepository.findById(new ObjectId(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        if (dto.getOrderInfor() != null) existing.setOrderInfor(dto.getOrderInfor());
+        if (dto.getAmount() != null) existing.setAmount(dto.getAmount());
+        if (dto.getVoucherId() != null) existing.setVoucherId(dto.getVoucherId());
+        if (dto.getTotalPrice() != null) existing.setTotalPrice(dto.getTotalPrice());
+        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
+
+        existing.setLastEdited(java.time.LocalDateTime.now());
+
+        return OrderMapper.toDTO(orderRepository.save(existing));
+    }
+
+    @Override
     public Map<String, Object> totalRevenueWithCompare() {
         LocalDate today = LocalDate.now();
         LocalDate startOfThisWeek = today.with(DayOfWeek.MONDAY);
@@ -321,23 +337,4 @@ public class OrderServiceImpl implements OrderService {
 
         return result;
     }
-
-    @Override
-    public OrderDTO partialUpdateOrder(String id, UpdateOrderDTO dto) {
-        Order existing = orderRepository.findById(new ObjectId(id))
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
-
-        if (dto.getOrderInfor() != null) existing.setOrderInfor(dto.getOrderInfor());
-        if (dto.getAmount() != null) existing.setAmount(dto.getAmount());
-        if (dto.getVoucherId() != null) existing.setVoucherId(dto.getVoucherId());
-        if (dto.getTotalPrice() != null) existing.setTotalPrice(dto.getTotalPrice());
-        if (dto.getStatus() != null) existing.setStatus(dto.getStatus());
-
-        existing.setLastEdited(java.time.LocalDateTime.now());
-
-        return OrderMapper.toDTO(orderRepository.save(existing));
-    }
-
-
-
 }
