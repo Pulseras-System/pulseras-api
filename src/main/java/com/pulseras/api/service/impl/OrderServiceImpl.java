@@ -113,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
         // ✅ Tổng doanh thu toàn bộ lịch sử (status ≠ 0 && status ≠ 1)
         BigDecimal totalRevenue = orderRepository.findAll()
                 .stream()
-                .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                 .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -121,7 +121,7 @@ public class OrderServiceImpl implements OrderService {
         // ✅ Doanh thu tuần này
         BigDecimal thisWeekRevenue = orderRepository.findByCreateDateBetween(startThisWeek, LocalDateTime.now())
                 .stream()
-                .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                 .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 ;
@@ -129,7 +129,7 @@ public class OrderServiceImpl implements OrderService {
         // ✅ Doanh thu tuần trước
         BigDecimal lastWeekRevenue = orderRepository.findByCreateDateBetween(startLastWeek, endLastWeek)
                 .stream()
-                .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                 .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 ;
@@ -171,19 +171,19 @@ public class OrderServiceImpl implements OrderService {
         // ✅ Tổng toàn bộ đơn hàng trong lịch sử (status ≠ 0 && status ≠ 1)
         long totalOrders = orderRepository.findAll()
                 .stream()
-                .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                 .count();
 
         // ✅ Tổng đơn hàng tuần này
         long thisWeekOrders = orderRepository.findByCreateDateBetween(startThisWeek, LocalDateTime.now())
                 .stream()
-                .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                 .count();
 
         // ✅ Tổng đơn hàng tuần trước
         long lastWeekOrders = orderRepository.findByCreateDateBetween(startLastWeek, endLastWeek)
                 .stream()
-                .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                 .count();
 
         // ✅ Tính phần trăm thay đổi
@@ -245,13 +245,13 @@ public class OrderServiceImpl implements OrderService {
             long orderCount = orderRepository
                     .findByCreateDateBetween(startOfDay, endOfDay)
                     .stream()
-                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                     .count();
 
             BigDecimal revenue = orderRepository
                     .findByCreateDateBetween(startOfDay, endOfDay)
                     .stream()
-                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                     .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -283,13 +283,13 @@ public class OrderServiceImpl implements OrderService {
             long orderCount = orderRepository
                     .findByCreateDateBetween(startOfDay, endOfDay)
                     .stream()
-                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                     .count();
 
             BigDecimal revenue = orderRepository
                     .findByCreateDateBetween(startOfDay, endOfDay)
                     .stream()
-                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                     .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -317,13 +317,13 @@ public class OrderServiceImpl implements OrderService {
             long orderCount = orderRepository
                     .findByCreateDateBetween(startOfMonth, endOfMonth)
                     .stream()
-                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                     .count();
 
             BigDecimal revenue = orderRepository
                     .findByCreateDateBetween(startOfMonth, endOfMonth)
                     .stream()
-                    .filter(order -> order.getStatus() != 0 && order.getStatus() != 1)
+                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
                     .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
