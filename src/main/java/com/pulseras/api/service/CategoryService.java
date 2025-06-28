@@ -14,4 +14,5 @@ public interface CategoryService {
     void delete(String id);
     void partialUpdate(String id, UpdateCategoryDto dto);
 
+    CategoryDto getByName(String name);
 }

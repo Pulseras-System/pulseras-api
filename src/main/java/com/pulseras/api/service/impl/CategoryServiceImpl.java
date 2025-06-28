@@ -80,4 +80,11 @@ public class CategoryServiceImpl implements CategoryService {
         repository.save(category);
     }
 
+    @Override
+    public CategoryDto getByName(String name) {
+        return repository.findByCategoryName(name)
+                .map(CategoryMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+    }
+
 }
