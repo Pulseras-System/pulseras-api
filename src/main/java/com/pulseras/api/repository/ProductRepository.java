@@ -20,4 +20,18 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     );
 
     List<Product> findTop6ByOrderByCreateDateDesc();
+
+    Page<Product> findByStatus(
+            int status, Pageable pageable);
+
+    Page<Product> findByStatusAndProductNameContainingIgnoreCase(
+            int status, String keyword, Pageable pageable);
+
+    Page<Product> findByStatusAndCategoryIdsContaining(
+            int status, String categoryId, Pageable pageable);
+
+    Page<Product> findByStatusAndCategoryIdsContainingAndProductNameContainingIgnoreCase(
+            int status, String categoryId, String keyword, Pageable pageable);
+    List<Product> findTop6ByStatusOrderByCreateDateDesc(int status);
+
 }

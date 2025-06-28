@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class NotificationDTO {
     private String id;
-    private Integer accountId;
+    private String accountId;
     private String message;
     private Integer status;
     private LocalDateTime lastEdited;

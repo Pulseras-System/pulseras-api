@@ -29,31 +29,46 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private static final int ACTIVE = 1;
 
 
     @Override
-    public Map<String, Object> getAll(String keyword, String categoryId, int page, int size, String sort) {
+    public Map<String, Object> getAll(
+            String keyword,
+            String categoryId,
+            int page,
+            int size,
+            String sort) {
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
         Page<Product> result;
 
         boolean hasKeyword = keyword != null && !keyword.isEmpty();
         boolean hasCategory = categoryId != null && !categoryId.isEmpty();
 
+        // Luôn lọc status = 1
+        int ACTIVE = 1;
+
         if (hasCategory && hasKeyword) {
-            result = new PageImpl<>(
-                    repository.findByCategoryIdsContainingAndProductNameContainingIgnoreCase(categoryId, keyword, pageable)
-            );
+            result = repository
+                    .findByStatusAndCategoryIdsContainingAndProductNameContainingIgnoreCase(
+                            ACTIVE, categoryId, keyword, pageable);
         } else if (hasCategory) {
-            result = new PageImpl<>(
-                    repository.findByCategoryIdsContaining(categoryId, pageable)
-            );
+            result = repository
+                    .findByStatusAndCategoryIdsContaining(
+                            ACTIVE, categoryId, pageable);
         } else if (hasKeyword) {
-            result = repository.findByProductNameContainingIgnoreCase(keyword, pageable);
+            result = repository
+                    .findByStatusAndProductNameContainingIgnoreCase(
+                            ACTIVE, keyword, pageable);
         } else {
-            result = repository.findAll(pageable);
+            result = repository
+                    .findByStatus(
+                            ACTIVE, pageable);
         }
 
-        List<ProductDto> content = result.getContent().stream()
+        List<ProductDto> content = result.getContent()
+                .stream()
                 .map(ProductMapper::toDto)
                 .toList();
 
@@ -63,6 +78,7 @@ public class ProductServiceImpl implements ProductService {
                 "totalItems", result.getTotalElements()
         );
     }
+
 
     @Override
     public ProductDto getById(String id) {
@@ -144,33 +160,38 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDto> getTopBuyProducts() {
+
+        // Gom nhóm OrderDetail hợp lệ (status != 0) thành bảng đếm
         Map<String, Long> productCount = orderDetailRepository.findAll().stream()
-                .filter(orderDetail -> orderDetail.getStatus() != null && orderDetail.getStatus() != 0)
-                .filter(orderDetail -> orderDetail.getProductId() != null && orderDetail.getProductId() != null)
+                .filter(od -> od.getStatus() != null && od.getStatus() != 0)
+                .filter(od -> od.getProductId() != null)
                 .collect(Collectors.groupingBy(
-                        orderDetail -> orderDetail.getProductId(),
+                        OrderDetail::getProductId,
                         Collectors.counting()
                 ));
 
         return productCount.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(6)
-                .map(entry -> {
-                    Product product = repository.findById(entry.getKey()).orElse(null);
-                    return product != null ? ProductMapper.toDto(product) : null;
-                })
+                .map(entry -> repository.findById(entry.getKey())
+                        .filter(p -> p.getStatus() == ACTIVE)
+                        .map(ProductMapper::toDto)
+                        .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
+    /** TOP 6 sản phẩm mới nhất */
     @Override
     public List<ProductDto> getLatestProducts() {
-        List<Product> products = repository.findTop6ByOrderByCreateDateDesc();
+        List<Product> products = repository
+                .findTop6ByStatusOrderByCreateDateDesc(ACTIVE);
 
         return products.stream()
                 .map(ProductMapper::toDto)
                 .collect(Collectors.toList());
     }
+
 
 
 }
