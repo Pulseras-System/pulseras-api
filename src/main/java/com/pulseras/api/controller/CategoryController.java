@@ -48,4 +48,9 @@ public class CategoryController {
     public void partialUpdate(@PathVariable String id, @RequestBody UpdateCategoryDto dto) {
         service.partialUpdate(id, dto);
     }
+
+    @GetMapping("/name/{name}")
+    public CategoryDto getByName(@PathVariable String name) {
+        return service.getByName(name);
+    }
 }
