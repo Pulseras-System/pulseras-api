@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CreateVoucherDTO {
     private String voucherName;
+    private String accountId; // Account that owns this voucher
     private Integer voucherQuantity;
     private Double minPrice;
     private Double maxDiscount;

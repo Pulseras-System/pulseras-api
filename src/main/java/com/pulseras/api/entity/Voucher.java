@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "vouchers")
 @Data
@@ -20,6 +21,8 @@ public class Voucher {
     @Indexed
     private String voucherName;
 
+    private String accountId; // Account that owns this voucher
+    private List<String> usedByAccounts; // List of account IDs that have used this voucher
     private Integer voucherQuantity;
     private Double minPrice;
     private Double maxDiscount;

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/vouchers")
@@ -46,6 +47,36 @@ public class VoucherController {
     public ResponseEntity<VoucherDTO> partialUpdate(@PathVariable String id,
                                                     @RequestBody UpdateVoucherDTO dto) {
         return ResponseEntity.ok(service.partialUpdateVoucher(id, dto));
+    }
+
+    @GetMapping("/account/{accountId}")
+    public List<VoucherDTO> getByAccountId(@PathVariable String accountId) {
+        return service.getVouchersByAccountId(accountId);
+    }
+
+    @GetMapping("/{id}/account/{accountId}")
+    public ResponseEntity<VoucherDTO> getByIdAndAccountId(@PathVariable String id, @PathVariable String accountId) {
+        return ResponseEntity.ok(service.getVoucherByIdAndAccountId(id, accountId));
+    }
+
+    @GetMapping("/account/{accountId}/available")
+    public List<VoucherDTO> getAvailableByAccountId(@PathVariable String accountId) {
+        return service.getAvailableVouchersByAccountId(accountId);
+    }
+
+    @GetMapping("/public")
+    public List<VoucherDTO> getPublicVouchers() {
+        return service.getPublicVouchers();
+    }
+
+    @GetMapping("/{id}/usable/{accountId}")
+    public ResponseEntity<Boolean> isVoucherUsable(@PathVariable String id, @PathVariable String accountId) {
+        return ResponseEntity.ok(service.isVoucherUsable(id, accountId));
+    }
+
+    @GetMapping("/{id}/used-by/{accountId}")
+    public ResponseEntity<Boolean> hasAccountUsedVoucher(@PathVariable String id, @PathVariable String accountId) {
+        return ResponseEntity.ok(service.hasAccountUsedVoucher(id, accountId));
     }
 
 }

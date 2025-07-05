@@ -11,6 +11,7 @@ import com.pulseras.api.repository.OrderDetailRepository;
 import com.pulseras.api.repository.ProductRepository;
 import com.pulseras.api.service.AccountService;
 import com.pulseras.api.service.OrderService;
+import com.pulseras.api.service.VoucherService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
 
     private final AccountService accountService;
+    private final VoucherService voucherService;
 
     @Override
     public List<OrderDTO> getAllOrders() {
@@ -52,15 +54,30 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDTO createOrder(CreateOrderDTO dto) {
+        // Validate voucher ownership if voucher is provided
+        if (dto.getVoucherId() != null && dto.getAccountId() != null) {
+            validateVoucherOwnership(dto.getVoucherId(), dto.getAccountId());
+        }
+        
         // Create new regular order (not a cart)
         Order order = OrderMapper.toEntity(dto);
         order.setCreateDate(LocalDateTime.now());
-        return OrderMapper.toDTO(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        
+        // Mark voucher as used if order is completed
+        markVoucherAsUsedIfOrderCompleted(saved);
+        
+        return OrderMapper.toDTO(saved);
     }
     @Override
     public OrderDTO updateOrder(String id, CreateOrderDTO dto) {
         Order existing = orderRepository.findById(new ObjectId(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        // Validate voucher ownership if voucher is provided
+        if (dto.getVoucherId() != null && dto.getAccountId() != null) {
+            validateVoucherOwnership(dto.getVoucherId(), dto.getAccountId());
+        }
 
         existing.setOrderInfor(dto.getOrderInfor());
         existing.setAmount(dto.getAmount());
@@ -70,7 +87,12 @@ public class OrderServiceImpl implements OrderService {
         existing.setStatus(dto.getStatus());
         existing.setLastEdited(dto.getLastEdited());
 
-        return OrderMapper.toDTO(orderRepository.save(existing));
+        Order saved = orderRepository.save(existing);
+        
+        // Mark voucher as used if order is completed
+        markVoucherAsUsedIfOrderCompleted(saved);
+
+        return OrderMapper.toDTO(saved);
     }
 
     @Override
@@ -94,6 +116,11 @@ public class OrderServiceImpl implements OrderService {
         Order existing = orderRepository.findById(new ObjectId(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
+        // Validate voucher ownership if voucher is being updated
+        if (dto.getVoucherId() != null && existing.getAccountId() != null) {
+            validateVoucherOwnership(dto.getVoucherId(), existing.getAccountId());
+        }
+
         // Check if status is changing from cart (1) to completed (not 1)
         boolean isCartBeingCompleted = existing.getStatus() != null && existing.getStatus() == 1 &&
                                      dto.getStatus() != null && dto.getStatus() != 1;
@@ -113,6 +140,9 @@ public class OrderServiceImpl implements OrderService {
         if (isCartBeingCompleted) {
             System.out.println("Cart " + id + " completed. Product quantities remain reserved (purchased).");
         }
+        
+        // Mark voucher as used if order is completed
+        markVoucherAsUsedIfOrderCompleted(saved);
 
         return OrderMapper.toDTO(saved);
     }
@@ -580,6 +610,30 @@ public class OrderServiceImpl implements OrderService {
         } catch (Exception e) {
             System.err.println("Failed to add product " + productId + " to cart " + cartOrder.getId() + ": " + e.getMessage());
             throw new RuntimeException("Failed to add product to cart: " + e.getMessage(), e);
+        }
+    }
+    
+    // Helper method to validate voucher ownership and usage
+    private void validateVoucherOwnership(String voucherId, String accountId) {
+        if (voucherId != null && !voucherId.trim().isEmpty() && !voucherId.equals("0")) {
+            if (!voucherService.isVoucherUsable(voucherId, accountId)) {
+                throw new IllegalArgumentException("Voucher with id " + voucherId + " is not usable by account " + accountId + ". It may not be available to this account, already be used by this account, be expired, or be inactive.");
+            }
+        }
+    }
+
+    // Helper method to mark voucher as used when order is completed
+    private void markVoucherAsUsedIfOrderCompleted(Order order) {
+        if (order.getVoucherId() != null && !order.getVoucherId().trim().isEmpty() && !order.getVoucherId().equals("0")) {
+            // Check if order status indicates completion (not cart=1 and not cancelled=0)
+            if (order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1) {
+                try {
+                    voucherService.markVoucherAsUsed(order.getVoucherId(), order.getAccountId());
+                    System.out.println("Marked voucher " + order.getVoucherId() + " as used by account " + order.getAccountId());
+                } catch (Exception e) {
+                    System.err.println("Failed to mark voucher as used: " + e.getMessage());
+                }
+            }
         }
     }
 }
