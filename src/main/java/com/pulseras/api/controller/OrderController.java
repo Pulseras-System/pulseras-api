@@ -1,5 +1,6 @@
 package com.pulseras.api.controller;
 
+import com.pulseras.api.dto.AggregatedOverview;
 import com.pulseras.api.dto.CreateOrderDTO;
 import com.pulseras.api.dto.OrderDTO;
 import com.pulseras.api.dto.UpdateOrderDTO;
@@ -64,19 +65,9 @@ public class OrderController {
         return ResponseEntity.ok(orderService.totalGrowthWithCompare());
     }
 
-    @GetMapping("/weekly-overview")
-    public ResponseEntity<?> getWeeklyOverview() {
-        return ResponseEntity.ok(orderService.getWeeklyOverview());
-    }
-
-    @GetMapping("/monthly-overview")
-    public ResponseEntity<?> getMonthlyOverview() {
-        return ResponseEntity.ok(orderService.getMonthlyOverview());
-    }
-
-    @GetMapping("/yearly-overview")
-    public ResponseEntity<?> getYearlyOverview() {
-        return ResponseEntity.ok(orderService.getYearlyOverview());
+    @GetMapping("/overview")      // FE chỉ call URL này
+    public ResponseEntity<AggregatedOverview> getOverview() {
+        return ResponseEntity.ok(orderService.getOverview());
     }
 
     @PatchMapping("/{id}")

@@ -1,9 +1,11 @@
 package com.pulseras.api.service;
 
+import com.pulseras.api.dto.AggregatedOverview;
 import com.pulseras.api.dto.CreateOrderDTO;
 import com.pulseras.api.dto.OrderDTO;
 import com.pulseras.api.dto.UpdateOrderDTO;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +19,6 @@ public interface OrderService {
     Map<String, Object> totalRevenueWithCompare();
     Map<String, Object> totalOrdersWithCompare();
     Map<String, Object> totalGrowthWithCompare();
-    List<Map<String, Object>> getWeeklyOverview();
-    List<Map<String, Object>> getMonthlyOverview();
-    List<Map<String, Object>> getYearlyOverview();
+    AggregatedOverview getOverview();
     OrderDTO partialUpdateOrder(String id, UpdateOrderDTO dto);
 }

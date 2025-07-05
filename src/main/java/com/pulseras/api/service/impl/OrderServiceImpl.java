@@ -1,8 +1,6 @@
 package com.pulseras.api.service.impl;
 
-import com.pulseras.api.dto.CreateOrderDTO;
-import com.pulseras.api.dto.OrderDTO;
-import com.pulseras.api.dto.UpdateOrderDTO;
+import com.pulseras.api.dto.*;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.OrderMapper;
 import com.pulseras.api.entity.Order;
@@ -12,6 +10,7 @@ import com.pulseras.api.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -231,110 +231,82 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Map<String, Object>> getWeeklyOverview() {
+    @Transactional(readOnly = true)
+    public AggregatedOverview getOverview() {
         LocalDate today = LocalDate.now();
+
+        return new AggregatedOverview(
+                buildWeekly(today),
+                buildMonthly(today),
+                buildYearly(today.getYear())
+        );
+    }
+
+    private List<DailyOverview> buildWeekly(LocalDate today) {
         LocalDate monday = today.with(DayOfWeek.MONDAY);
 
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (int i = 0; i < 7; i++) {
-            LocalDate currentDay = monday.plusDays(i);
-            LocalDateTime startOfDay = currentDay.atStartOfDay();
-            LocalDateTime endOfDay = currentDay.atTime(LocalTime.MAX);
-
-            long orderCount = orderRepository
-                    .findByCreateDateBetween(startOfDay, endOfDay)
-                    .stream()
-                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
-                    .count();
-
-            BigDecimal revenue = orderRepository
-                    .findByCreateDateBetween(startOfDay, endOfDay)
-                    .stream()
-                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
-                    .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            Map<String, Object> dayData = new HashMap<>();
-            String dayLabel = (i == 6) ? "CN" : "T" + (i + 2);
-            dayData.put("day", dayLabel);
-            dayData.put("orderCount", orderCount);
-            dayData.put("revenue", revenue);
-
-            result.add(dayData);
-        }
-
-        return result;
+        return IntStream.range(0, 7)
+                .mapToObj(i -> {
+                    LocalDate current = monday.plusDays(i);
+                    return aggregatePerDay(current,
+                            i == 6 ? "CN" : "T" + (i + 2));
+                })
+                .toList();
     }
 
-    @Override
-    public List<Map<String, Object>> getMonthlyOverview() {
-        LocalDate today = LocalDate.now();
-        YearMonth currentMonth = YearMonth.from(today);
-        int daysInMonth = currentMonth.lengthOfMonth();
+    private List<DailyOverview> buildMonthly(LocalDate today) {
+        YearMonth ym = YearMonth.from(today);
 
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (int day = 1; day <= daysInMonth; day++) {
-            LocalDate currentDate = currentMonth.atDay(day);
-            LocalDateTime startOfDay = currentDate.atStartOfDay();
-            LocalDateTime endOfDay = currentDate.atTime(LocalTime.MAX);
-
-            long orderCount = orderRepository
-                    .findByCreateDateBetween(startOfDay, endOfDay)
-                    .stream()
-                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
-                    .count();
-
-            BigDecimal revenue = orderRepository
-                    .findByCreateDateBetween(startOfDay, endOfDay)
-                    .stream()
-                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
-                    .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            Map<String, Object> dayData = new HashMap<>();
-            dayData.put("day", currentDate.getDayOfMonth()); // 1 -> 31
-            dayData.put("orderCount", orderCount);
-            dayData.put("revenue", revenue);
-
-            result.add(dayData);
-        }
-
-        return result;
+        return IntStream.rangeClosed(1, ym.lengthOfMonth())
+                .mapToObj(day -> aggregatePerDay(ym.atDay(day),
+                        String.valueOf(day)))
+                .toList();
     }
 
-    @Override
-    public List<Map<String, Object>> getYearlyOverview() {
-        int currentYear = Year.now().getValue();
-        List<Map<String, Object>> result = new ArrayList<>();
+    private List<MonthlyOverview> buildYearly(int year) {
+        return IntStream.rangeClosed(1, 12)
+                .mapToObj(m -> aggregatePerMonth(YearMonth.of(year, m),
+                        "T" + m))
+                .toList();
+    }
 
-        for (int month = 1; month <= 12; month++) {
-            YearMonth currentMonth = YearMonth.of(currentYear, month);
-            LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
-            LocalDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(LocalTime.MAX);
+    private DailyOverview aggregatePerDay(LocalDate date, String label) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end   = date.atTime(LocalTime.MAX);
 
-            long orderCount = orderRepository
-                    .findByCreateDateBetween(startOfMonth, endOfMonth)
-                    .stream()
-                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
-                    .count();
+        List<Order> orders = orderRepository
+                .findByCreateDateBetween(start, end)
+                .stream()
+                .filter(o -> isFinished(o.getStatus()))
+                .toList();
 
-            BigDecimal revenue = orderRepository
-                    .findByCreateDateBetween(startOfMonth, endOfMonth)
-                    .stream()
-                    .filter(order -> order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1)
-                    .map(order -> BigDecimal.valueOf(order.getTotalPrice()))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long count = orders.size();
+        BigDecimal revenue = orders.stream()
+                .map(o -> BigDecimal.valueOf(o.getTotalPrice()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            Map<String, Object> monthData = new HashMap<>();
-            monthData.put("month", "T" + month); // T1 -> T12
-            monthData.put("orderCount", orderCount);
-            monthData.put("revenue", revenue);
+        return new DailyOverview(label, count, revenue);
+    }
 
-            result.add(monthData);
-        }
+    private MonthlyOverview aggregatePerMonth(YearMonth ym, String label) {
+        LocalDateTime start = ym.atDay(1).atStartOfDay();
+        LocalDateTime end   = ym.atEndOfMonth().atTime(LocalTime.MAX);
 
-        return result;
+        List<Order> orders = orderRepository
+                .findByCreateDateBetween(start, end)
+                .stream()
+                .filter(o -> isFinished(o.getStatus()))
+                .toList();
+
+        long count = orders.size();
+        BigDecimal revenue = orders.stream()
+                .map(o -> BigDecimal.valueOf(o.getTotalPrice()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new MonthlyOverview(label, count, revenue);
+    }
+
+    private boolean isFinished(Integer status) {
+        return status != null && status != 0 && status != 1;
     }
 }
