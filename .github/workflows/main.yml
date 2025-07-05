@@ -17,13 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Json file
-        run: |
-          mkdir -p src/main/resources
-          echo "$FIREBASE_JSON" > src/main/resources/firebase/firebase-service-account.json
-        env:
-          FIREBASE_JSON: ${{ secrets.FIREBASE_JSON }}
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
