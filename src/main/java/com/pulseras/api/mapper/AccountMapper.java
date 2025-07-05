@@ -24,9 +24,15 @@ public class AccountMapper {
     public static AccountDTO toDTO(Account entity) {
         String roleName = "";
         if (entity.getRoleId() != null && !entity.getRoleId().trim().isEmpty()) {
-            roleName = roleRepository.findById(entity.getRoleId())
-                    .map(Role::getRoleName)
-                    .orElse("");
+            try {
+                ObjectId roleObjectId = new ObjectId(entity.getRoleId());
+                roleName = roleRepository.findById(roleObjectId)
+                        .map(Role::getRoleName)
+                        .orElse("");
+            } catch (IllegalArgumentException e) {
+                // Invalid ObjectId format, keep roleName as empty string
+                roleName = "";
+            }
         }
 
         return AccountDTO.builder()
