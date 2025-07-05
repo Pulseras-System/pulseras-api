@@ -24,6 +24,6 @@ public interface OrderService {
     
     // Cart management methods
     void restoreCartProductQuantities(String cartOrderId);
-    OrderDTO addToCart(String accountId, String productId, Integer quantity);
+    OrderDTO addToCart(String accountId, String productId);
     OrderDTO addMultipleToCart(String accountId, List<String> productIds);
 }

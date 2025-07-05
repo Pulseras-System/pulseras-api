@@ -423,7 +423,7 @@ public class OrderServiceImpl implements OrderService {
     }
     
     @Override
-    public OrderDTO addToCart(String accountId, String productId, Integer quantity) {
+    public OrderDTO addToCart(String accountId, String productId) {
         if (accountId == null || accountId.trim().isEmpty()) {
             throw new IllegalArgumentException("Account ID is required");
         }
@@ -445,7 +445,7 @@ public class OrderServiceImpl implements OrderService {
             }
             
             // Always add product to cart with quantity 1
-            addProductToCartWithQuantity(cartOrder, productId, product.getPrice().doubleValue(), 1);
+            addProductToCartWithQuantity(cartOrder, productId, product.getPrice().doubleValue());
             
             // Return updated cart
             return OrderMapper.toDTO(orderRepository.findById(cartOrder.getId()).orElse(cartOrder));
@@ -482,7 +482,7 @@ public class OrderServiceImpl implements OrderService {
                     }
                     
                     // Add product with quantity 1
-                    addProductToCartWithQuantity(cartOrder, productId, product.getPrice().doubleValue(), 1);
+                    addProductToCartWithQuantity(cartOrder, productId, product.getPrice().doubleValue());
                 }
             }
             
@@ -518,11 +518,12 @@ public class OrderServiceImpl implements OrderService {
                 .createDate(LocalDateTime.now())
                 .lastEdited(LocalDateTime.now())
                 .build();
-        return orderRepository.save(newCart);
+        orderRepository.save(newCart);
+        return newCart;
     }
     
     // Helper method to add product with specific quantity
-    private void addProductToCartWithQuantity(Order cartOrder, String productId, Double price, Integer quantity) {
+    private void addProductToCartWithQuantity(Order cartOrder, String productId, Double price) {
         try {
             // Get product to update quantity
             Product product = productRepository.findById(productId)
@@ -542,14 +543,11 @@ public class OrderServiceImpl implements OrderService {
                     existingDetail.setStatus(1);
                     existingDetail.setQuantity(1);
                     
-                    System.out.println("Reactivated product " + productId + " in cart " + cartOrder.getId() + 
-                                     " with quantity 1");
                 } else {
                     // Increment existing quantity by 1
                     int oldQuantity = existingDetail.getQuantity();
                     existingDetail.setQuantity(oldQuantity + 1);
                     
-                    System.out.println("Updated product " + productId + " quantity from " + oldQuantity + " to " + (oldQuantity + 1));
                 }
                 existingDetail.setLastEdited(LocalDateTime.now());
                 orderDetailRepository.save(existingDetail);
@@ -567,7 +565,6 @@ public class OrderServiceImpl implements OrderService {
                         .build();
                 orderDetailRepository.save(newDetail);
                 
-                System.out.println("Added new product " + productId + " to cart " + cartOrder.getId() + " with quantity 1");
             }
             
             // Decrease product quantity by 1

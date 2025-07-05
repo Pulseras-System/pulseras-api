@@ -1,9 +1,6 @@
 package com.pulseras.api.controller;
 
-import com.pulseras.api.dto.AggregatedOverview;
-import com.pulseras.api.dto.CreateOrderDTO;
-import com.pulseras.api.dto.OrderDTO;
-import com.pulseras.api.dto.UpdateOrderDTO;
+import com.pulseras.api.dto.*;
 import com.pulseras.api.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -78,52 +75,24 @@ public class OrderController {
     }
 
     @PostMapping("/add-to-cart")
-    public ResponseEntity<OrderDTO> addToCart(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<OrderDTO> addToCart(@RequestBody AddToCartDto request) {
         try {
-            String accountId = (String) request.get("accountId");
-            Object productIdObj = request.get("productId");
-            Object quantityObj = request.get("quantity");
-            
-            if (accountId == null || accountId.trim().isEmpty()) {
+//            String accountId = (String) request.get("accountId");
+//            Object productIdObj = request.get("productId");
+//            Object quantityObj = request.get("quantity");
+
+            if (request.getAccountId() == null || request.getAccountId().trim().isEmpty()) {
                 throw new IllegalArgumentException("AccountId is required");
             }
-            
-            if (productIdObj == null) {
+
+            if (request.getProductId() == null) {
                 throw new IllegalArgumentException("ProductId is required");
             }
-            
-            OrderDTO result;
-            
-            if (productIdObj instanceof List) {
-                // Handle multiple productIds
-                @SuppressWarnings("unchecked")
-                List<String> productIds = (List<String>) productIdObj;
-                if (productIds.isEmpty()) {
-                    throw new IllegalArgumentException("ProductId list cannot be empty");
-                }
-                result = orderService.addMultipleToCart(accountId, productIds);
-            } else {
-                // Handle single productId
-                String productId = (String) productIdObj;
-                Integer quantity = null;
-                
-                if (quantityObj != null) {
-                    if (quantityObj instanceof Integer) {
-                        quantity = (Integer) quantityObj;
-                    } else if (quantityObj instanceof String) {
-                        try {
-                            quantity = Integer.parseInt((String) quantityObj);
-                        } catch (NumberFormatException e) {
-                            throw new IllegalArgumentException("Invalid quantity format: " + quantityObj);
-                        }
-                    }
-                }
-                
-                result = orderService.addToCart(accountId, productId, quantity);
-            }
-            
+
+            var result = orderService.addToCart(request.getAccountId(), request.getProductId());
+
             return ResponseEntity.ok(result);
-            
+
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
