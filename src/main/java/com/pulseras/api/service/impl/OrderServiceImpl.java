@@ -52,91 +52,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDTO createOrder(CreateOrderDTO dto) {
-        // If status is 1 (cart), handle cart operations
-        if (dto.getStatus() != null && dto.getStatus() == 1 && dto.getAccountId() != null) {
-            return handleCartOperation(dto);
-        }
-        
         // Create new regular order (not a cart)
         Order order = OrderMapper.toEntity(dto);
         order.setCreateDate(LocalDateTime.now());
         return OrderMapper.toDTO(orderRepository.save(order));
     }
-    
-    // Helper method to handle cart operations
-    private OrderDTO handleCartOperation(CreateOrderDTO dto) {
-        String accountId = dto.getAccountId();
-        
-        // Check for existing cart
-        List<Order> existingOrders = orderRepository.findByAccountId(accountId);
-        Order existingCart = existingOrders.stream()
-                .filter(order -> order.getStatus() != null && order.getStatus() == 1)
-                .findFirst()
-                .orElse(null);
-        
-        // If no products specified, just return existing cart or create empty cart
-        if ((dto.getProductId() == null || dto.getProductId().trim().isEmpty()) && 
-            (dto.getProductIds() == null || dto.getProductIds().isEmpty())) {
-            
-            if (existingCart != null) {
-                // Update cart totals before returning
-                updateCartTotals(existingCart);
-                return OrderMapper.toDTO(existingCart);
-            } else {
-                // Create empty cart
-                Order newCart = Order.builder()
-                        .accountId(accountId)
-                        .status(1)
-                        .totalPrice(0.0)
-                        .amount(0)
-                        .orderInfor("Cart")
-                        .createDate(LocalDateTime.now())
-                        .lastEdited(LocalDateTime.now())
-                        .build();
-                return OrderMapper.toDTO(orderRepository.save(newCart));
-            }
-        }
-        
-        // Products are specified - add them to cart
-        Order cartOrder = existingCart;
-        
-        if (cartOrder == null) {
-            // Create new cart
-            cartOrder = Order.builder()
-                    .accountId(accountId)
-                    .status(1)
-                    .totalPrice(0.0)
-                    .amount(0)
-                    .orderInfor("Cart")
-                    .createDate(LocalDateTime.now())
-                    .lastEdited(LocalDateTime.now())
-                    .build();
-            cartOrder = orderRepository.save(cartOrder);
-        }
-        
-        // Add products to cart
-        if (dto.getProductId() != null && !dto.getProductId().trim().isEmpty()) {
-            // Single product
-            Product product = productRepository.findById(dto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + dto.getProductId()));
-            addProductToCartWithIncrement(cartOrder, dto.getProductId(), product.getPrice().doubleValue());
-        }
-        
-        if (dto.getProductIds() != null && !dto.getProductIds().isEmpty()) {
-            // Multiple products
-            for (String productId : dto.getProductIds()) {
-                if (productId != null && !productId.trim().isEmpty()) {
-                    Product product = productRepository.findById(productId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
-                    addProductToCartWithIncrement(cartOrder, productId, product.getPrice().doubleValue());
-                }
-            }
-        }
-        
-        // Return updated cart
-        return OrderMapper.toDTO(orderRepository.findById(cartOrder.getId()).orElse(cartOrder));
-    }
-
     @Override
     public OrderDTO updateOrder(String id, CreateOrderDTO dto) {
         Order existing = orderRepository.findById(new ObjectId(id))
@@ -454,96 +374,6 @@ public class OrderServiceImpl implements OrderService {
         return status != null && status != 0 && status != 1;
     }
     
-    // Helper method to add product with +1 increment
-    private void addProductToCartWithIncrement(Order cartOrder, String productId, Double price) {
-        try {
-            // Get product to check availability and update quantity
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
-            
-            // Check if product already exists in cart
-            List<OrderDetail> existingDetails = orderDetailRepository.findByOrderId(cartOrder.getId().toString());
-            OrderDetail existingDetail = existingDetails.stream()
-                    .filter(detail -> productId.equals(detail.getProductId()))
-                    .findFirst()
-                    .orElse(null);
-            
-            if (existingDetail != null) {
-                // Product exists - increment quantity by 1 and reactivate if needed
-                if (existingDetail.getStatus() == 0) {
-                    // Check product availability before reactivating
-                    if (product.getQuantity() < 1) {
-                        throw new IllegalStateException("Product is out of stock: " + product.getProductName());
-                    }
-                    
-                    // Reactivate deleted item with quantity 1
-                    existingDetail.setStatus(1);
-                    existingDetail.setQuantity(1);
-                    
-                    // Decrease product quantity
-                    product.setQuantity(product.getQuantity() - 1);
-                    product.setLastEdited(LocalDateTime.now());
-                    productRepository.save(product);
-                    
-                    System.out.println("Reactivated product " + productId + " in cart " + cartOrder.getId() + 
-                                     ". Product stock decreased to: " + product.getQuantity());
-                } else {
-                    // Check product availability before incrementing
-                    if (product.getQuantity() < 1) {
-                        throw new IllegalStateException("Product is out of stock: " + product.getProductName());
-                    }
-                    
-                    // Increment existing quantity by 1
-                    int oldQuantity = existingDetail.getQuantity();
-                    existingDetail.setQuantity(oldQuantity + 1);
-                    
-                    // Decrease product quantity
-                    product.setQuantity(product.getQuantity() - 1);
-                    product.setLastEdited(LocalDateTime.now());
-                    productRepository.save(product);
-                    
-                    System.out.println("Updated product " + productId + " quantity from " + oldQuantity + " to " + (oldQuantity + 1) +
-                                     ". Product stock decreased to: " + product.getQuantity());
-                }
-                existingDetail.setLastEdited(LocalDateTime.now());
-                orderDetailRepository.save(existingDetail);
-            } else {
-                // Check product availability before creating new cart item
-                if (product.getQuantity() < 1) {
-                    throw new IllegalStateException("Product is out of stock: " + product.getProductName());
-                }
-                
-                // Create new order detail with quantity 1
-                OrderDetail newDetail = OrderDetail.builder()
-                        .orderId(cartOrder.getId().toString())
-                        .productId(productId)
-                        .quantity(1) // Always start with 1
-                        .price(price)
-                        .promotionId(0)
-                        .status(1)
-                        .createDate(LocalDateTime.now())
-                        .lastEdited(LocalDateTime.now())
-                        .build();
-                orderDetailRepository.save(newDetail);
-                
-                // Decrease product quantity
-                product.setQuantity(product.getQuantity() - 1);
-                product.setLastEdited(LocalDateTime.now());
-                productRepository.save(product);
-                
-                System.out.println("Added new product " + productId + " to cart " + cartOrder.getId() + " with quantity 1" +
-                                 ". Product stock decreased to: " + product.getQuantity());
-            }
-            
-            // Update cart totals
-            updateCartTotals(cartOrder);
-            
-        } catch (Exception e) {
-            System.err.println("Failed to add product " + productId + " to cart " + cartOrder.getId() + ": " + e.getMessage());
-            throw new RuntimeException("Failed to add product to cart: " + e.getMessage(), e);
-        }
-    }
-    
     // Helper method to update cart totals with new product
     private void updateCartTotals(Order cartOrder) {
         try {
@@ -589,6 +419,170 @@ public class OrderServiceImpl implements OrderService {
             cartOrder.setTotalPrice(0.0);
             cartOrder.setLastEdited(LocalDateTime.now());
             orderRepository.save(cartOrder);
+        }
+    }
+    
+    @Override
+    public OrderDTO addToCart(String accountId, String productId, Integer quantity) {
+        if (accountId == null || accountId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Account ID is required");
+        }
+        if (productId == null || productId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Product ID is required");
+        }
+        
+        try {
+            // Get or create cart
+            Order cartOrder = getOrCreateCart(accountId);
+            
+            // Get product to check availability
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+            
+            // Check stock availability (always add just 1)
+            if (product.getQuantity() < 1) {
+                throw new IllegalStateException("Product is out of stock: " + product.getProductName());
+            }
+            
+            // Always add product to cart with quantity 1
+            addProductToCartWithQuantity(cartOrder, productId, product.getPrice().doubleValue(), 1);
+            
+            // Return updated cart
+            return OrderMapper.toDTO(orderRepository.findById(cartOrder.getId()).orElse(cartOrder));
+            
+        } catch (Exception e) {
+            System.err.println("Failed to add product to cart: " + e.getMessage());
+            throw new RuntimeException("Failed to add product to cart: " + e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public OrderDTO addMultipleToCart(String accountId, List<String> productIds) {
+        if (accountId == null || accountId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Account ID is required");
+        }
+        if (productIds == null || productIds.isEmpty()) {
+            throw new IllegalArgumentException("Product IDs list cannot be empty");
+        }
+        
+        try {
+            // Get or create cart
+            Order cartOrder = getOrCreateCart(accountId);
+            
+            // Add each product to cart
+            for (String productId : productIds) {
+                if (productId != null && !productId.trim().isEmpty()) {
+                    Product product = productRepository.findById(productId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+                    
+                    // Check stock availability
+                    if (product.getQuantity() < 1) {
+                        System.out.println("Skipping product " + productId + " - out of stock");
+                        continue;
+                    }
+                    
+                    // Add product with quantity 1
+                    addProductToCartWithQuantity(cartOrder, productId, product.getPrice().doubleValue(), 1);
+                }
+            }
+            
+            // Return updated cart
+            return OrderMapper.toDTO(orderRepository.findById(cartOrder.getId()).orElse(cartOrder));
+            
+        } catch (Exception e) {
+            System.err.println("Failed to add multiple products to cart: " + e.getMessage());
+            throw new RuntimeException("Failed to add multiple products to cart: " + e.getMessage(), e);
+        }
+    }
+    
+    // Helper method to get or create cart for an account
+    private Order getOrCreateCart(String accountId) {
+        // Check for existing cart
+        List<Order> existingOrders = orderRepository.findByAccountId(accountId);
+        Order existingCart = existingOrders.stream()
+                .filter(order -> order.getStatus() != null && order.getStatus() == 1)
+                .findFirst()
+                .orElse(null);
+        
+        if (existingCart != null) {
+            return existingCart;
+        }
+        
+        // Create new cart
+        Order newCart = Order.builder()
+                .accountId(accountId)
+                .status(1)
+                .totalPrice(0.0)
+                .amount(0)
+                .orderInfor("Cart")
+                .createDate(LocalDateTime.now())
+                .lastEdited(LocalDateTime.now())
+                .build();
+        return orderRepository.save(newCart);
+    }
+    
+    // Helper method to add product with specific quantity
+    private void addProductToCartWithQuantity(Order cartOrder, String productId, Double price, Integer quantity) {
+        try {
+            // Get product to update quantity
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+            
+            // Check if product already exists in cart
+            List<OrderDetail> existingDetails = orderDetailRepository.findByOrderId(cartOrder.getId().toString());
+            OrderDetail existingDetail = existingDetails.stream()
+                    .filter(detail -> productId.equals(detail.getProductId()))
+                    .findFirst()
+                    .orElse(null);
+            
+            if (existingDetail != null) {
+                // Product exists - increment quantity and reactivate if needed
+                if (existingDetail.getStatus() == 0) {
+                    // Reactivate deleted item with quantity 1
+                    existingDetail.setStatus(1);
+                    existingDetail.setQuantity(1);
+                    
+                    System.out.println("Reactivated product " + productId + " in cart " + cartOrder.getId() + 
+                                     " with quantity 1");
+                } else {
+                    // Increment existing quantity by 1
+                    int oldQuantity = existingDetail.getQuantity();
+                    existingDetail.setQuantity(oldQuantity + 1);
+                    
+                    System.out.println("Updated product " + productId + " quantity from " + oldQuantity + " to " + (oldQuantity + 1));
+                }
+                existingDetail.setLastEdited(LocalDateTime.now());
+                orderDetailRepository.save(existingDetail);
+            } else {
+                // Create new order detail with quantity 1
+                OrderDetail newDetail = OrderDetail.builder()
+                        .orderId(cartOrder.getId().toString())
+                        .productId(productId)
+                        .quantity(1)
+                        .price(price)
+                        .promotionId(0)
+                        .status(1)
+                        .createDate(LocalDateTime.now())
+                        .lastEdited(LocalDateTime.now())
+                        .build();
+                orderDetailRepository.save(newDetail);
+                
+                System.out.println("Added new product " + productId + " to cart " + cartOrder.getId() + " with quantity 1");
+            }
+            
+            // Decrease product quantity by 1
+            product.setQuantity(product.getQuantity() - 1);
+            product.setLastEdited(LocalDateTime.now());
+            productRepository.save(product);
+            
+            System.out.println("Product " + productId + " stock decreased by 1. New stock: " + product.getQuantity());
+            
+            // Update cart totals
+            updateCartTotals(cartOrder);
+            
+        } catch (Exception e) {
+            System.err.println("Failed to add product " + productId + " to cart " + cartOrder.getId() + ": " + e.getMessage());
+            throw new RuntimeException("Failed to add product to cart: " + e.getMessage(), e);
         }
     }
 }
