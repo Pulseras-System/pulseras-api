@@ -28,5 +28,6 @@ public class ProductDto {
     private LocalDateTime createDate;
     private LocalDateTime lastEdited;
     private int status;
+    private BigDecimal finalPrice;
 
 }

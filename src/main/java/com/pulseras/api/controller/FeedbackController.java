@@ -34,13 +34,13 @@ public class FeedbackController {
     }
 
     @PostMapping
-    public void create(@Valid @RequestBody CreateFeedbackDto dto) {
-        service.create(dto);
+    public FeedbackDto create(@Valid @RequestBody CreateFeedbackDto dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable String id, @Valid @RequestBody CreateFeedbackDto dto) {
-        service.update(id, dto);
+    public FeedbackDto update(@PathVariable String id, @Valid @RequestBody CreateFeedbackDto dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")

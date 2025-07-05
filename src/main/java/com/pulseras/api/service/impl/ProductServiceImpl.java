@@ -5,14 +5,13 @@ import com.pulseras.api.dto.CreateProductDto;
 import com.pulseras.api.entity.OrderDetail;
 import com.pulseras.api.entity.Product;
 import com.pulseras.api.entity.Category;
+import com.pulseras.api.entity.Promotion;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.ProductMapper;
 import com.pulseras.api.repository.CategoryRepository;
 import com.pulseras.api.repository.OrderDetailRepository;
-import com.pulseras.api.repository.OrderRepository;
 import com.pulseras.api.repository.ProductRepository;
-import com.pulseras.api.service.CategoryService;
-import com.pulseras.api.service.OrderDetailService;
+import com.pulseras.api.repository.PromotionRepository;
 import com.pulseras.api.service.ProductService;
 import com.pulseras.api.service.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,48 +31,33 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final PromotionRepository promotionRepository;
     private final ProductMapper productMapper;
     private final S3Service s3Service;
     private static final int ACTIVE = 1;
 
 
     @Override
-    public Map<String, Object> getAll(
-            String keyword,
-            String categoryId,
-            int page,
-            int size,
-            String sort) {
-
+    public Map<String, Object> getAll(String keyword, String categoryId, int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
         Page<Product> result;
 
         boolean hasKeyword = keyword != null && !keyword.isEmpty();
         boolean hasCategory = categoryId != null && !categoryId.isEmpty();
 
-        int ACTIVE = 1;
-
         if (hasCategory && hasKeyword) {
-            result = repository
-                    .findByStatusAndCategoryIdsContainingAndProductNameContainingIgnoreCase(
-                            ACTIVE, categoryId, keyword, pageable);
+            result = repository.findByStatusAndCategoryIdsContainingAndProductNameContainingIgnoreCase(ACTIVE, categoryId, keyword, pageable);
         } else if (hasCategory) {
-            result = repository
-                    .findByStatusAndCategoryIdsContaining(
-                            ACTIVE, categoryId, pageable);
+            result = repository.findByStatusAndCategoryIdsContaining(ACTIVE, categoryId, pageable);
         } else if (hasKeyword) {
-            result = repository
-                    .findByStatusAndProductNameContainingIgnoreCase(
-                            ACTIVE, keyword, pageable);
+            result = repository.findByStatusAndProductNameContainingIgnoreCase(ACTIVE, keyword, pageable);
         } else {
-            result = repository
-                    .findByStatus(
-                            ACTIVE, pageable);
+            result = repository.findByStatus(ACTIVE, pageable);
         }
 
-        List<ProductDto> content = result.getContent()
-                .stream()
+        List<ProductDto> content = result.getContent().stream()
                 .map(productMapper::toDto)
+                .peek(this::applyFinalPrice)
                 .toList();
 
         return Map.of(
@@ -87,7 +72,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto getById(String id) {
         Product product = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        return productMapper.toDto(product);
+        ProductDto dto = productMapper.toDto(product);
+        applyFinalPrice(dto);
+        return dto;
     }
 
     @Override
@@ -105,7 +92,9 @@ public class ProductServiceImpl implements ProductService {
             entity.setProductImage(imageUrl);
             entity.setCreateDate(LocalDateTime.now());
             Product saved = repository.save(entity);
-            return productMapper.toDto(saved);
+            ProductDto productDto = productMapper.toDto(saved);
+            applyFinalPrice(productDto);
+            return productDto;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Lỗi xác thực: " + e.getMessage(), e);
         } catch (Exception e) {
@@ -129,7 +118,9 @@ public class ProductServiceImpl implements ProductService {
         existing.setLastEdited(LocalDateTime.now());
 
         Product updated = repository.save(existing);
-        return productMapper.toDto(updated);
+        ProductDto productDto = productMapper.toDto(updated);
+        applyFinalPrice(productDto);
+        return productDto;
     }
 
     @Override
@@ -195,6 +186,10 @@ public class ProductServiceImpl implements ProductService {
                 .map(entry -> repository.findById(entry.getKey())
                         .filter(p -> p.getStatus() == ACTIVE)
                         .map(productMapper::toDto)
+                        .map(dto -> {
+                            applyFinalPrice(dto);
+                            return dto;
+                        })
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -208,9 +203,22 @@ public class ProductServiceImpl implements ProductService {
 
         return products.stream()
                 .map(productMapper::toDto)
+                .peek(this::applyFinalPrice)
                 .collect(Collectors.toList());
     }
 
 
+    private void applyFinalPrice(ProductDto dto) {
+        Optional<Promotion> promo = promotionRepository
+                .findFirstByProductIdAndStatusOrderByCreateDateDesc(dto.getProductId(), ACTIVE);
+        if (promo.isPresent()) {
+            BigDecimal discount = dto.getPrice()
+                    .multiply(BigDecimal.valueOf(promo.get().getDiscountPercentage()))
+                    .divide(BigDecimal.valueOf(100));
+            dto.setFinalPrice(dto.getPrice().subtract(discount));
+        } else {
+            dto.setFinalPrice(null);
+        }
+    }
 
 }
