@@ -18,8 +18,6 @@ public class CreateProductDto {
     @NotBlank
     private String productMaterial;
 
-    private String productImage;
-
     @Min(0)
     private int quantity;
 
@@ -31,6 +29,8 @@ public class CreateProductDto {
 
     @NotNull
     private Integer status;
+
+    // Getters & Setters
 
     public List<String> getCategoryIds() {
         return categoryIds;
@@ -62,14 +62,6 @@ public class CreateProductDto {
 
     public void setProductMaterial(String productMaterial) {
         this.productMaterial = productMaterial;
-    }
-
-    public String getProductImage() {
-        return productImage;
-    }
-
-    public void setProductImage(String productImage) {
-        this.productImage = productImage;
     }
 
     public int getQuantity() {

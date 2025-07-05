@@ -14,9 +14,11 @@ import com.pulseras.api.repository.ProductRepository;
 import com.pulseras.api.service.CategoryService;
 import com.pulseras.api.service.OrderDetailService;
 import com.pulseras.api.service.ProductService;
+import com.pulseras.api.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductMapper productMapper;
+    private final S3Service s3Service;
     private static final int ACTIVE = 1;
 
 
@@ -88,11 +91,26 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto create(CreateProductDto dto) {
-        Product entity = productMapper.toEntity(dto);
-        entity.setCreateDate(LocalDateTime.now());
-        Product saved = repository.save(entity);
-        return productMapper.toDto(saved);
+    public ProductDto create(CreateProductDto dto, MultipartFile image) {
+        try {
+            if (image == null || image.isEmpty()) {
+                throw new IllegalArgumentException("Hình ảnh là bắt buộc và không được để trống");
+            }
+            if (!image.getContentType().startsWith("image/")) {
+                throw new IllegalArgumentException("Tệp phải là hình ảnh (ví dụ: .jpg, .png)");
+            }
+
+            String imageUrl = s3Service.uploadFile(image);
+            Product entity = productMapper.toEntity(dto);
+            entity.setProductImage(imageUrl);
+            entity.setCreateDate(LocalDateTime.now());
+            Product saved = repository.save(entity);
+            return productMapper.toDto(saved);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Lỗi xác thực: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi tạo sản phẩm: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -104,7 +122,6 @@ public class ProductServiceImpl implements ProductService {
         existing.setProductName(dto.getProductName());
         existing.setProductDescription(dto.getProductDescription());
         existing.setProductMaterial(dto.getProductMaterial());
-        existing.setProductImage(dto.getProductImage());
         existing.setQuantity(dto.getQuantity());
         existing.setType(dto.getType());
         existing.setPrice(dto.getPrice());
