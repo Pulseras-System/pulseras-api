@@ -516,7 +516,6 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
             
-            // Return updated cart
             return OrderMapper.toDTO(orderRepository.findById(cartOrder.getId()).orElse(cartOrder));
             
         } catch (Exception e) {
@@ -525,9 +524,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
     
-    // Helper method to get or create cart for an account
     private Order getOrCreateCart(String accountId) {
-        // Check for existing cart
         List<Order> existingOrders = orderRepository.findByAccountId(accountId);
         Order existingCart = existingOrders.stream()
                 .filter(order -> order.getStatus() != null && order.getStatus() == 1)
@@ -552,14 +549,13 @@ public class OrderServiceImpl implements OrderService {
         return newCart;
     }
     
-    // Helper method to add product with specific quantity
+
     private void addProductToCartWithQuantity(Order cartOrder, String productId, Double price) {
         try {
             // Get product to update quantity
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
             
-            // Check if product already exists in cart
             List<OrderDetail> existingDetails = orderDetailRepository.findByOrderId(cartOrder.getId().toString());
             OrderDetail existingDetail = existingDetails.stream()
                     .filter(detail -> productId.equals(detail.getProductId()))
@@ -567,14 +563,11 @@ public class OrderServiceImpl implements OrderService {
                     .orElse(null);
             
             if (existingDetail != null) {
-                // Product exists - increment quantity and reactivate if needed
                 if (existingDetail.getStatus() == 0) {
-                    // Reactivate deleted item with quantity 1
                     existingDetail.setStatus(1);
                     existingDetail.setQuantity(1);
                     
                 } else {
-                    // Increment existing quantity by 1
                     int oldQuantity = existingDetail.getQuantity();
                     existingDetail.setQuantity(oldQuantity + 1);
                     
@@ -582,7 +575,6 @@ public class OrderServiceImpl implements OrderService {
                 existingDetail.setLastEdited(LocalDateTime.now());
                 orderDetailRepository.save(existingDetail);
             } else {
-                // Create new order detail with quantity 1
                 OrderDetail newDetail = OrderDetail.builder()
                         .orderId(cartOrder.getId().toString())
                         .productId(productId)
@@ -597,14 +589,12 @@ public class OrderServiceImpl implements OrderService {
                 
             }
             
-            // Decrease product quantity by 1
             product.setQuantity(product.getQuantity() - 1);
             product.setLastEdited(LocalDateTime.now());
             productRepository.save(product);
             
             System.out.println("Product " + productId + " stock decreased by 1. New stock: " + product.getQuantity());
             
-            // Update cart totals
             updateCartTotals(cartOrder);
             
         } catch (Exception e) {
@@ -612,8 +602,7 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Failed to add product to cart: " + e.getMessage(), e);
         }
     }
-    
-    // Helper method to validate voucher ownership and usage
+
     private void validateVoucherOwnership(String voucherId, String accountId) {
         if (voucherId != null && !voucherId.trim().isEmpty() && !voucherId.equals("0")) {
             if (!voucherService.isVoucherUsable(voucherId, accountId)) {
@@ -622,10 +611,8 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    // Helper method to mark voucher as used when order is completed
     private void markVoucherAsUsedIfOrderCompleted(Order order) {
         if (order.getVoucherId() != null && !order.getVoucherId().trim().isEmpty() && !order.getVoucherId().equals("0")) {
-            // Check if order status indicates completion (not cart=1 and not cancelled=0)
             if (order.getStatus() != null && order.getStatus() != 0 && order.getStatus() != 1) {
                 try {
                     voucherService.markVoucherAsUsed(order.getVoucherId(), order.getAccountId());
