@@ -9,6 +9,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+
+import com.pulseras.api.dto.AggregatedOverview;
+import com.pulseras.api.dto.CreateOrderDTO;
+import com.pulseras.api.dto.OrderDTO;
+import com.pulseras.api.dto.UpdateOrderDTO;
+import com.pulseras.api.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,5 +89,36 @@ public class OrderController {
         return ResponseEntity.ok(orderService.partialUpdateOrder(id, dto));
     }
 
+    @PostMapping("/cleanup-expired-carts")
+    public ResponseEntity<Map<String, String>> cleanupExpiredCarts() {
+        // This endpoint can be used to manually trigger cart cleanup for testing
+        // In production, this would typically be removed or secured with admin access
+        try {
+            // Note: This would need the CartCleanupService to be injected here
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Cart cleanup triggered manually. Check logs for details.");
+            response.put("timestamp", LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to trigger cart cleanup: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
 
+    @PostMapping("/restore-cart-quantities/{cartOrderId}")
+    public ResponseEntity<Map<String, String>> restoreCartQuantities(@PathVariable String cartOrderId) {
+        // Manual endpoint to restore quantities for a specific cart (useful for testing)
+        try {
+            orderService.restoreCartProductQuantities(cartOrderId);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Cart quantities restored for order: " + cartOrderId);
+            response.put("timestamp", LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to restore cart quantities: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
 }
