@@ -38,14 +38,15 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void create(CreateCategoryDto dto) {
+    public CategoryDto create(CreateCategoryDto dto) {
         Category entity = CategoryMapper.toEntity(dto);
         entity.setCreateDate(LocalDateTime.now());
-        repository.save(entity);
+        Category saved = repository.save(entity);
+        return CategoryMapper.toDto(saved);
     }
 
     @Override
-    public void update(String id, CreateCategoryDto dto) {
+    public CategoryDto update(String id, CreateCategoryDto dto) {
         Category existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
@@ -53,7 +54,8 @@ public class CategoryServiceImpl implements CategoryService {
         existing.setStatus(dto.getStatus());
         existing.setLastEdited(LocalDateTime.now());
 
-        repository.save(existing);
+        Category updated = repository.save(existing);
+        return CategoryMapper.toDto(updated);
     }
 
     @Override
@@ -86,5 +88,4 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(CategoryMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
-
 }
