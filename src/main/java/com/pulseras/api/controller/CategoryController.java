@@ -30,13 +30,13 @@ public class CategoryController {
     }
 
     @PostMapping
-    public void create(@Valid @RequestBody CreateCategoryDto dto) {
-        service.create(dto);
+    public CategoryDto create(@Valid @RequestBody CreateCategoryDto dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable String id, @Valid @RequestBody CreateCategoryDto dto) {
-        service.update(id, dto);
+    public CategoryDto update(@PathVariable String id, @Valid @RequestBody CreateCategoryDto dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
