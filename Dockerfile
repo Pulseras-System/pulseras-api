@@ -17,7 +17,7 @@ WORKDIR /app
 COPY --from=builder /build/target/pulseras-api-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the port the app runs on (change if needed)
-EXPOSE 8080
+EXPOSE 2764
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
