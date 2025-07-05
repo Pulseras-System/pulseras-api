@@ -28,10 +28,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,13 +102,21 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequest) {
-        Account account = repository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
-
-        if (!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) {
-            throw new AuthenticationException("Invalid username or password");
+        Optional<Account> accountOptional = repository.findByUsername(loginRequest.getUsername());
+        if (accountOptional.isEmpty()) {
+            accountOptional = repository.findByEmail(loginRequest.getUsername());
         }
 
+        // If no account is found, throw AuthenticationException
+        Account account = accountOptional.orElseThrow(() ->
+                new AuthenticationException("Invalid username or email"));
+
+        // Validate password
+        if (!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) {
+            throw new AuthenticationException("Invalid username or email");
+        }
+
+        // Generate JWT token and return response
         String token = jwtUtil.generateToken(account.getUsername());
         AccountDTO accountDTO = AccountMapper.toDTO(account);
         return LoginResponseDTO.builder()

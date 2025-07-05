@@ -29,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final ProductMapper productMapper;
     private static final int ACTIVE = 1;
 
 
@@ -68,7 +69,7 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductDto> content = result.getContent()
                 .stream()
-                .map(ProductMapper::toDto)
+                .map(productMapper::toDto)
                 .toList();
 
         return Map.of(
@@ -83,15 +84,15 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto getById(String id) {
         Product product = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        return ProductMapper.toDto(product);
+        return productMapper.toDto(product);
     }
 
     @Override
     public ProductDto create(CreateProductDto dto) {
-        Product entity = ProductMapper.toEntity(dto);
+        Product entity = productMapper.toEntity(dto);
         entity.setCreateDate(LocalDateTime.now());
         Product saved = repository.save(entity);
-        return ProductMapper.toDto(saved);
+        return productMapper.toDto(saved);
     }
 
     @Override
@@ -111,7 +112,7 @@ public class ProductServiceImpl implements ProductService {
         existing.setLastEdited(LocalDateTime.now());
 
         Product updated = repository.save(existing);
-        return ProductMapper.toDto(updated);
+        return productMapper.toDto(updated);
     }
 
     @Override
@@ -176,7 +177,7 @@ public class ProductServiceImpl implements ProductService {
                 .limit(6)
                 .map(entry -> repository.findById(entry.getKey())
                         .filter(p -> p.getStatus() == ACTIVE)
-                        .map(ProductMapper::toDto)
+                        .map(productMapper::toDto)
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -189,7 +190,7 @@ public class ProductServiceImpl implements ProductService {
                 .findTop6ByStatusOrderByCreateDateDesc(ACTIVE);
 
         return products.stream()
-                .map(ProductMapper::toDto)
+                .map(productMapper::toDto)
                 .collect(Collectors.toList());
     }
 
