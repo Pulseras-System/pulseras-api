@@ -3,8 +3,10 @@ package com.pulseras.api.service.impl;
 import com.pulseras.api.dto.CreateRatingDto;
 import com.pulseras.api.dto.RatingDto;
 import com.pulseras.api.entity.Rating;
+import com.pulseras.api.entity.Product;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.RatingMapper;
+import com.pulseras.api.repository.ProductRepository;
 import com.pulseras.api.repository.RatingRepository;
 import com.pulseras.api.service.RatingService;
 import org.springframework.data.domain.*;
@@ -18,9 +20,11 @@ import java.util.Map;
 public class RatingServiceImpl implements RatingService {
 
     private final RatingRepository repository;
+    private final ProductRepository productRepository;
 
-    public RatingServiceImpl(RatingRepository repository) {
+    public RatingServiceImpl(RatingRepository repository, ProductRepository productRepository) {
         this.repository = repository;
+        this.productRepository = productRepository;
     }
 
     @Override
@@ -35,7 +39,10 @@ public class RatingServiceImpl implements RatingService {
         }
 
         List<RatingDto> content = result.getContent().stream()
-                .map(RatingMapper::toDto)
+                .map(r -> {
+                    Product p = productRepository.findById(r.getProductId()).orElse(null);
+                    return RatingMapper.toDto(r, p != null ? p.getProductName() : null);
+                })
                 .toList();
 
         return Map.of(
@@ -49,14 +56,19 @@ public class RatingServiceImpl implements RatingService {
     public RatingDto getById(String id) {
         Rating rating = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rating not found"));
-        return RatingMapper.toDto(rating);
+
+        Product p = productRepository.findById(rating.getProductId()).orElse(null);
+        return RatingMapper.toDto(rating, p != null ? p.getProductName() : null);
     }
 
     @Override
-    public void create(CreateRatingDto dto) {
+    public RatingDto create(CreateRatingDto dto) {
         Rating entity = RatingMapper.toEntity(dto);
         entity.setCreateDate(LocalDateTime.now());
-        repository.save(entity);
+        Rating saved = repository.save(entity);
+
+        Product product = productRepository.findById(saved.getProductId()).orElse(null);
+        return RatingMapper.toDto(saved, product != null ? product.getProductName() : null);
     }
 
     @Override

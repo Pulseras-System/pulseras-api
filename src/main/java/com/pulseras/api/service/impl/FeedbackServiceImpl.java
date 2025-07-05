@@ -3,25 +3,32 @@ package com.pulseras.api.service.impl;
 import com.pulseras.api.dto.CreateFeedbackDto;
 import com.pulseras.api.dto.FeedbackDto;
 import com.pulseras.api.entity.Feedback;
+import com.pulseras.api.entity.Product;
+import com.pulseras.api.entity.Account;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.FeedbackMapper;
+import com.pulseras.api.repository.AccountRepository;
 import com.pulseras.api.repository.FeedbackRepository;
+import com.pulseras.api.repository.ProductRepository;
 import com.pulseras.api.service.FeedbackService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.bson.types.ObjectId;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository repository;
-
-    public FeedbackServiceImpl(FeedbackRepository repository) {
-        this.repository = repository;
-    }
+    private final ProductRepository productRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     public Map<String, Object> getAll(String keyword, int page, int size, String sort) {
@@ -35,7 +42,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         }
 
         List<FeedbackDto> content = result.getContent().stream()
-                .map(FeedbackMapper::toDto)
+                .map(this::toDtoWithNames)
                 .toList();
 
         return Map.of(
@@ -47,20 +54,21 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public FeedbackDto getById(String id) {
-        Feedback f = repository.findById(id)
+        Feedback feedback = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Feedback not found"));
-        return FeedbackMapper.toDto(f);
+        return toDtoWithNames(feedback);
     }
 
     @Override
-    public void create(CreateFeedbackDto dto) {
+    public FeedbackDto create(CreateFeedbackDto dto) {
         Feedback f = FeedbackMapper.toEntity(dto);
         f.setCreateDate(LocalDateTime.now());
-        repository.save(f);
+        Feedback saved = repository.save(f);
+        return toDtoWithNames(saved);
     }
 
     @Override
-    public void update(String id, CreateFeedbackDto dto) {
+    public FeedbackDto update(String id, CreateFeedbackDto dto) {
         Feedback f = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Feedback not found"));
 
@@ -70,7 +78,8 @@ public class FeedbackServiceImpl implements FeedbackService {
         f.setStatus(dto.getStatus());
         f.setLastEdited(LocalDateTime.now());
 
-        repository.save(f);
+        Feedback updated = repository.save(f);
+        return toDtoWithNames(updated);
     }
 
     @Override
@@ -79,5 +88,34 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw new ResourceNotFoundException("Feedback not found");
         }
         repository.deleteById(id);
+    }
+
+    private FeedbackDto toDtoWithNames(Feedback f) {
+        String productName = null;
+        String fullName = null;
+
+        if (f.getProductId() != null && ObjectId.isValid(f.getProductId())) {
+            productName = productRepository.findById(f.getProductId())
+                    .map(Product::getProductName)
+                    .orElse("Unknown Product");
+        }
+
+        if (f.getAccountId() != null && ObjectId.isValid(f.getAccountId())) {
+            fullName = accountRepository.findById(new ObjectId(f.getAccountId()))
+                    .map(Account::getFullName)
+                    .orElse("Unknown User");
+        }
+
+        return FeedbackDto.builder()
+                .feedbackId(f.getFeedbackId())
+                .accountId(f.getAccountId())
+                .productId(f.getProductId())
+                .productName(productName)
+                .fullName(fullName)
+                .feedbackInfor(f.getFeedbackInfor())
+                .status(f.getStatus())
+                .lastEdited(f.getLastEdited())
+                .createDate(f.getCreateDate())
+                .build();
     }
 }

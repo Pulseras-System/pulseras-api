@@ -34,8 +34,8 @@ public class RatingController {
     }
 
     @PostMapping
-    public void create(@Valid @RequestBody CreateRatingDto dto) {
-        service.create(dto);
+    public RatingDto create(@Valid @RequestBody CreateRatingDto dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")

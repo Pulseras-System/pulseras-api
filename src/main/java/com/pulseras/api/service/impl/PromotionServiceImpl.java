@@ -3,8 +3,10 @@ package com.pulseras.api.service.impl;
 import com.pulseras.api.dto.CreatePromotionDto;
 import com.pulseras.api.dto.PromotionDto;
 import com.pulseras.api.entity.Promotion;
+import com.pulseras.api.entity.Product;
 import com.pulseras.api.exception.ResourceNotFoundException;
 import com.pulseras.api.mapper.PromotionMapper;
+import com.pulseras.api.repository.ProductRepository;
 import com.pulseras.api.repository.PromotionRepository;
 import com.pulseras.api.service.PromotionService;
 import org.springframework.data.domain.*;
@@ -18,9 +20,11 @@ import java.util.Map;
 public class PromotionServiceImpl implements PromotionService {
 
     private final PromotionRepository repository;
+    private final ProductRepository productRepository;
 
-    public PromotionServiceImpl(PromotionRepository repository) {
+    public PromotionServiceImpl(PromotionRepository repository, ProductRepository productRepository) {
         this.repository = repository;
+        this.productRepository = productRepository;
     }
 
     @Override
@@ -35,7 +39,10 @@ public class PromotionServiceImpl implements PromotionService {
         }
 
         List<PromotionDto> content = result.getContent().stream()
-                .map(PromotionMapper::toDto)
+                .map(p -> {
+                    Product product = productRepository.findById(p.getProductId()).orElse(null);
+                    return PromotionMapper.toDto(p, product != null ? product.getProductName() : null);
+                })
                 .toList();
 
         return Map.of(
@@ -49,18 +56,23 @@ public class PromotionServiceImpl implements PromotionService {
     public PromotionDto getById(String id) {
         Promotion promo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
-        return PromotionMapper.toDto(promo);
+
+        Product product = productRepository.findById(promo.getProductId()).orElse(null);
+        return PromotionMapper.toDto(promo, product != null ? product.getProductName() : null);
     }
 
     @Override
-    public void create(CreatePromotionDto dto) {
+    public PromotionDto create(CreatePromotionDto dto) {
         Promotion entity = PromotionMapper.toEntity(dto);
         entity.setCreateDate(LocalDateTime.now());
-        repository.save(entity);
+        Promotion saved = repository.save(entity);
+
+        Product product = productRepository.findById(saved.getProductId()).orElse(null);
+        return PromotionMapper.toDto(saved, product != null ? product.getProductName() : null);
     }
 
     @Override
-    public void update(String id, CreatePromotionDto dto) {
+    public PromotionDto update(String id, CreatePromotionDto dto) {
         Promotion existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
 
@@ -73,7 +85,9 @@ public class PromotionServiceImpl implements PromotionService {
         existing.setStatus(dto.getStatus());
         existing.setLastEdited(LocalDateTime.now());
 
-        repository.save(existing);
+        Promotion updated = repository.save(existing);
+        Product product = productRepository.findById(updated.getProductId()).orElse(null);
+        return PromotionMapper.toDto(updated, product != null ? product.getProductName() : null);
     }
 
     @Override

@@ -17,10 +17,15 @@ public class RatingMapper {
     }
 
     public static RatingDto toDto(Rating r) {
+        return toDto(r, null);
+    }
+
+    public static RatingDto toDto(Rating r, String productName) {
         RatingDto dto = new RatingDto();
         dto.setRatingId(r.getRatingId());
         dto.setAccountId(r.getAccountId());
         dto.setProductId(r.getProductId());
+        dto.setProductName(productName);
         dto.setComment(r.getComment());
         dto.setRating(r.getRating());
         dto.setStatus(r.getStatus());

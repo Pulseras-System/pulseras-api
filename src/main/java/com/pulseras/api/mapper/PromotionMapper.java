@@ -19,9 +19,14 @@ public class PromotionMapper {
     }
 
     public static PromotionDto toDto(Promotion p) {
+        return toDto(p, null);
+    }
+
+    public static PromotionDto toDto(Promotion p, String productName) {
         PromotionDto dto = new PromotionDto();
         dto.setPromotionId(p.getPromotionId());
         dto.setProductId(p.getProductId());
+        dto.setProductName(productName);
         dto.setPromotionName(p.getPromotionName());
         dto.setPromotionDescription(p.getPromotionDescription());
         dto.setDiscountPercentage(p.getDiscountPercentage());

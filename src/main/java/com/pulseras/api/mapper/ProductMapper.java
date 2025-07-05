@@ -8,6 +8,7 @@ import com.pulseras.api.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
 @Component
@@ -30,15 +31,21 @@ public class ProductMapper {
     }
 
     public ProductDto toDto(Product p) {
+        return toDto(p, null);
+    }
+
+    public ProductDto toDto(Product p, BigDecimal finalPrice) {
         ProductDto dto = new ProductDto();
         dto.setProductId(p.getProductId());
         dto.setCategoryIds(p.getCategoryIds());
+
         String categoryNames = p.getCategoryIds().stream()
                 .map(id -> categoryRepository.findById(id)
                         .map(Category::getCategoryName)
                         .orElse(""))
                 .collect(Collectors.joining(","));
         dto.setCategoryName(categoryNames);
+
         dto.setProductName(p.getProductName());
         dto.setProductDescription(p.getProductDescription());
         dto.setProductMaterial(p.getProductMaterial());
@@ -49,6 +56,8 @@ public class ProductMapper {
         dto.setCreateDate(p.getCreateDate());
         dto.setLastEdited(p.getLastEdited());
         dto.setStatus(p.getStatus());
+        dto.setFinalPrice(finalPrice);
+
         return dto;
     }
 }

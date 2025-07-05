@@ -34,13 +34,13 @@ public class PromotionController {
     }
 
     @PostMapping
-    public void create(@Valid @RequestBody CreatePromotionDto dto) {
-        service.create(dto);
+    public PromotionDto create(@Valid @RequestBody CreatePromotionDto dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable String id, @Valid @RequestBody CreatePromotionDto dto) {
-        service.update(id, dto);
+    public PromotionDto update(@PathVariable String id, @Valid @RequestBody CreatePromotionDto dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
