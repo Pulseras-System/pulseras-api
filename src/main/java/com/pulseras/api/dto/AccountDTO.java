@@ -15,6 +15,7 @@ public class AccountDTO {
     private String phone;
     private String email;
     private String roleId;
+    private String roleName;
     private LocalDateTime createDate;
     private LocalDateTime lastEdited;
     private Integer status;

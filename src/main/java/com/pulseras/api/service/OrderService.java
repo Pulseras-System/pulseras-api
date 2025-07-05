@@ -21,4 +21,9 @@ public interface OrderService {
     Map<String, Object> totalGrowthWithCompare();
     AggregatedOverview getOverview();
     OrderDTO partialUpdateOrder(String id, UpdateOrderDTO dto);
+    
+    // Cart management methods
+    void restoreCartProductQuantities(String cartOrderId);
+    OrderDTO addToCart(String accountId, String productId, Integer quantity);
+    OrderDTO addMultipleToCart(String accountId, List<String> productIds);
 }

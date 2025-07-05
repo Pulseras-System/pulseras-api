@@ -2,14 +2,34 @@ package com.pulseras.api.mapper;
 
 import com.pulseras.api.dto.CreateOrderDTO;
 import com.pulseras.api.dto.OrderDTO;
+import com.pulseras.api.dto.OrderDetailDTO;
 import com.pulseras.api.entity.Order;
+import com.pulseras.api.repository.OrderDetailRepository;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
+@Component
 public class OrderMapper {
 
+    private static OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    public void setOrderDetailRepository(OrderDetailRepository orderDetailRepository) {
+        OrderMapper.orderDetailRepository = orderDetailRepository;
+    }
+
     public static OrderDTO toDTO(Order entity) {
+        // Get order details for this order
+        List<OrderDetailDTO> orderDetails = orderDetailRepository.findByOrderId(entity.getId().toHexString())
+                .stream()
+                .map(OrderDetailMapper::toDTO)
+                .collect(Collectors.toList());
+
         return OrderDTO.builder()
                 .id(entity.getId().toHexString())
                 .orderInfor(entity.getOrderInfor())
@@ -20,6 +40,7 @@ public class OrderMapper {
                 .status(entity.getStatus())
                 .lastEdited(entity.getLastEdited())
                 .createDate(entity.getCreateDate())
+                .orderDetails(orderDetails)
                 .build();
     }
 

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,5 +77,73 @@ public class OrderController {
         return ResponseEntity.ok(orderService.partialUpdateOrder(id, dto));
     }
 
+    @PostMapping("/add-to-cart")
+    public ResponseEntity<OrderDTO> addToCart(@RequestBody Map<String, Object> request) {
+        try {
+            String accountId = (String) request.get("accountId");
+            Object productIdObj = request.get("productId");
+            Object quantityObj = request.get("quantity");
+            
+            if (accountId == null || accountId.trim().isEmpty()) {
+                throw new IllegalArgumentException("AccountId is required");
+            }
+            
+            if (productIdObj == null) {
+                throw new IllegalArgumentException("ProductId is required");
+            }
+            
+            OrderDTO result;
+            
+            if (productIdObj instanceof List) {
+                // Handle multiple productIds
+                @SuppressWarnings("unchecked")
+                List<String> productIds = (List<String>) productIdObj;
+                if (productIds.isEmpty()) {
+                    throw new IllegalArgumentException("ProductId list cannot be empty");
+                }
+                result = orderService.addMultipleToCart(accountId, productIds);
+            } else {
+                // Handle single productId
+                String productId = (String) productIdObj;
+                Integer quantity = null;
+                
+                if (quantityObj != null) {
+                    if (quantityObj instanceof Integer) {
+                        quantity = (Integer) quantityObj;
+                    } else if (quantityObj instanceof String) {
+                        try {
+                            quantity = Integer.parseInt((String) quantityObj);
+                        } catch (NumberFormatException e) {
+                            throw new IllegalArgumentException("Invalid quantity format: " + quantityObj);
+                        }
+                    }
+                }
+                
+                result = orderService.addToCart(accountId, productId, quantity);
+            }
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to add to cart: " + e.getMessage(), e);
+        }
+    }
 
+    @PostMapping("/restore-cart-quantities/{cartOrderId}")
+    public ResponseEntity<Map<String, String>> restoreCartQuantities(@PathVariable String cartOrderId) {
+        // Manual endpoint to restore quantities for a specific cart (useful for testing)
+        try {
+            orderService.restoreCartProductQuantities(cartOrderId);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Cart quantities restored for order: " + cartOrderId);
+            response.put("timestamp", LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to restore cart quantities: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
 }
