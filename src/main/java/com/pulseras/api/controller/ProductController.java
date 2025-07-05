@@ -3,10 +3,14 @@ package com.pulseras.api.controller;
 import com.pulseras.api.dto.ProductDto;
 import com.pulseras.api.dto.CreateProductDto;
 import com.pulseras.api.service.ProductService;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -37,10 +41,31 @@ public class ProductController {
         return service.getById(id);
     }
 
-    @PostMapping
-    public ProductDto create(@Valid @RequestBody CreateProductDto dto) {
-        return service.create(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductDto create(
+            @RequestParam("categoryIds") List<String> categoryIds,
+            @RequestParam("productName") String productName,
+            @RequestParam("productDescription") String productDescription,
+            @RequestParam("productMaterial") String productMaterial,
+            @RequestParam("quantity") int quantity,
+            @RequestParam("type") String type,
+            @RequestParam("price") BigDecimal price,
+            @RequestParam("status") Integer status,
+            @RequestPart("image") MultipartFile image
+    ) {
+        CreateProductDto dto = new CreateProductDto();
+        dto.setCategoryIds(categoryIds);
+        dto.setProductName(productName);
+        dto.setProductDescription(productDescription);
+        dto.setProductMaterial(productMaterial);
+        dto.setQuantity(quantity);
+        dto.setType(type);
+        dto.setPrice(price);
+        dto.setStatus(status);
+
+        return service.create(dto, image);
     }
+
 
     @PutMapping("/{id}")
     public ProductDto update(@PathVariable String id, @Valid @RequestBody CreateProductDto dto) {
