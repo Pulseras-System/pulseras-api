@@ -1,5 +1,6 @@
 package com.pulseras.api.controller;
 
+import com.pulseras.api.dto.BestSellingProductDto;
 import com.pulseras.api.dto.ProductDto;
 import com.pulseras.api.dto.CreateProductDto;
 import com.pulseras.api.service.ProductService;
@@ -83,7 +84,7 @@ public class ProductController {
     }
 
     @GetMapping("/top-buy-products")
-    public ResponseEntity<List<ProductDto>> getTopBuyProducts() {
+    public ResponseEntity<List<BestSellingProductDto>> getTopBuyProducts() {
         return ResponseEntity.ok(service.getTopBuyProducts());
     }
 

@@ -1,5 +1,6 @@
 package com.pulseras.api.service.impl;
 
+import com.pulseras.api.dto.BestSellingProductDto;
 import com.pulseras.api.dto.ProductDto;
 import com.pulseras.api.dto.CreateProductDto;
 import com.pulseras.api.entity.OrderDetail;
@@ -169,31 +170,35 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> getTopBuyProducts() {
+    public List<BestSellingProductDto> getTopBuyProducts() {
 
-        // Gom nhóm OrderDetail hợp lệ (status != 0) thành bảng đếm
-        Map<String, Long> productCount = orderDetailRepository.findAll().stream()
-                .filter(od -> od.getStatus() != null && od.getStatus() != 0)
+        // 1. Lấy toàn bộ OrderDetail hợp lệ và tính tổng sản lượng bán cho từng productId
+        Map<String, Long> productSoldQty = orderDetailRepository.findAll().stream()
+                .filter(od -> od.getStatus() != null && od.getStatus() != 0)   // chỉ lấy chi tiết đơn “thành công”
                 .filter(od -> od.getProductId() != null)
                 .collect(Collectors.groupingBy(
                         OrderDetail::getProductId,
-                        Collectors.counting()
+                        Collectors.summingLong(od ->                      // cộng dồn theo field quantity
+                                od.getQuantity() == null ? 0 : od.getQuantity()
+                        )
                 ));
 
-        return productCount.entrySet().stream()
+        // 2. Sắp xếp giảm dần theo tổng sản lượng, giới hạn 6 và chuyển sang DTO
+        return productSoldQty.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(6)
                 .map(entry -> repository.findById(entry.getKey())
-                        .filter(p -> p.getStatus() == ACTIVE)
+                        .filter(p -> p.getStatus() == ACTIVE)            // vẫn chỉ lấy sản phẩm đang active
                         .map(productMapper::toDto)
                         .map(dto -> {
-                            applyFinalPrice(dto);
-                            return dto;
+                            applyFinalPrice(dto);                        // khuyến mãi/gom giá cuối
+                            return new BestSellingProductDto(dto, entry.getValue());
                         })
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
+
 
     /** TOP 6 sản phẩm mới nhất */
     @Override

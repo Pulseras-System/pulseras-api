@@ -1,5 +1,6 @@
 package com.pulseras.api.service;
 
+import com.pulseras.api.dto.BestSellingProductDto;
 import com.pulseras.api.dto.CreateProductDto;
 import com.pulseras.api.dto.ProductDto;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,6 @@ public interface ProductService {
     ProductDto update(String id, CreateProductDto dto);
     void delete(String id);
     List<Map<String, Object>> getProductTypeDistribution();
-    List<ProductDto> getTopBuyProducts();
+    List<BestSellingProductDto> getTopBuyProducts();
     List<ProductDto> getLatestProducts();
 }
