@@ -117,7 +117,7 @@ public class AccountServiceImpl implements AccountService {
         }
 
         // Generate JWT token and return response
-        String token = jwtUtil.generateToken(account.getUsername());
+        String token = jwtUtil.generateToken(account);
         AccountDTO accountDTO = AccountMapper.toDTO(account);
         return LoginResponseDTO.builder()
                 .token(token)
@@ -173,7 +173,7 @@ public class AccountServiceImpl implements AccountService {
                 account = repository.save(account);
             }
 
-            String token = jwtUtil.generateToken(account.getUsername());
+            String token = jwtUtil.generateToken(account);
 
             return LoginResponseDTO.builder()
                     .token(token)
