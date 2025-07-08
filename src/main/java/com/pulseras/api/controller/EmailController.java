@@ -10,7 +10,6 @@ import jakarta.mail.MessagingException;
 @RestController
 @RequestMapping("/api/emails")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class EmailController {
 
     private final EmailService emailService;
