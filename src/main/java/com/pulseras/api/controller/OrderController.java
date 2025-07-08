@@ -2,6 +2,8 @@ package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.*;
 import com.pulseras.api.service.OrderService;
+import com.pulseras.api.service.EmailService;
+import com.pulseras.api.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,8 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+    private final EmailService emailService;
+    private final AccountService accountService;
 
     @GetMapping
     public List<OrderDTO> getAll() {
@@ -115,4 +119,56 @@ public class OrderController {
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<String> updateStatus(@PathVariable String id, @RequestBody StatusUpdateDTO statusUpdate) {
+        try {
+            OrderDTO order = orderService.getOrderById(id);
+            
+            // Update status
+            UpdateOrderDTO updateDto = new UpdateOrderDTO();
+            updateDto.setStatus(statusUpdate.getStatus());
+            updateDto.setLastEdited(LocalDateTime.now());
+            orderService.partialUpdateOrder(id, updateDto);
+            
+            // Prepare status message
+            String message;
+            switch (statusUpdate.getStatus()) {
+                case 0:
+                    message = "Đơn hàng #" + id + " đã bị hủy.";
+                    if (statusUpdate.getReason() != null && !statusUpdate.getReason().trim().isEmpty()) {
+                        message += " Lý do: " + statusUpdate.getReason();
+                    }
+                    break;
+                case 1:
+                    message = "Đơn hàng #" + id + " đã được tạo thành công.";
+                    break;
+                case 2:
+                    message = "Đơn hàng #" + id + " đã được xác nhận và đang được xử lý.";
+                    break;
+                case 3:
+                    message = "Đơn hàng #" + id + " đang được vận chuyển.";
+                    break;
+                case 4:
+                    message = "Đơn hàng #" + id + " đã được giao thành công.";
+                    break;
+                default:
+                    message = "Trạng thái đơn hàng #" + id + " đã được cập nhật.";
+            }
+            
+            // Send notification email to customer
+            try {
+                AccountDTO account = accountService.getAccountById(order.getAccountId());
+                emailService.sendEmail(account.getEmail(), message, id);
+            } catch (Exception e) {
+                // Log error but don't fail the status update
+                System.err.println("Failed to send email notification: " + e.getMessage());
+            }
+            
+            return ResponseEntity.ok("Cập nhật trạng thái đơn hàng thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi cập nhật trạng thái: " + e.getMessage());
+        }
+    }
+
 }
