@@ -5,6 +5,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
 
@@ -37,4 +38,7 @@ public class Account {
     private LocalDateTime lastEdited;
 
     private Integer status;
+
+    @Nullable
+    private String banReason;
 }
