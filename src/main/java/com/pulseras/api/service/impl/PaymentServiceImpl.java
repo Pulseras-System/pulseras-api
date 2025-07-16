@@ -66,7 +66,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // PayOS description limit: 25 characters max
         String shortOrderId = orderId.length() > 10 ? orderId.substring(0, 10) : orderId;
-        String description = "DH#" + shortOrderId; // "DH#" = "Đơn hàng #" shortened
+        String description = orderId; 
 
         PaymentData paymentData = PaymentData.builder()
                 .orderCode(orderCode)
