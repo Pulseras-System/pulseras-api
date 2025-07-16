@@ -12,7 +12,7 @@ public interface ProductService {
     Map<String, Object> getAll(String keyword, String categoryId, int page, int size, String sort);
     ProductDto getById(String id);
     ProductDto create(CreateProductDto dto, MultipartFile image);
-    ProductDto update(String id, CreateProductDto dto);
+    ProductDto update(String id, CreateProductDto dto, MultipartFile image);
     void delete(String id);
     List<Map<String, Object>> getProductTypeDistribution();
     List<BestSellingProductDto> getTopBuyProducts();
