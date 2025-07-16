@@ -31,7 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderService orderService;
     private final OrderDetailService orderDetailService;
 
-    @Value("${payos.webhook-url}")
+    @Value("${PAYOS_WEBHOOK_URL}")
     private String webhookUrl;
 
     @Override
@@ -43,21 +43,32 @@ public class PaymentServiceImpl implements PaymentService {
 
         List<OrderDetailDTO> orderDetails = orderDetailService.getAllOrderDetailsByOrderId(orderId);
 
-        List<ItemData> items = orderDetails.stream().map(detail ->
-                ItemData.builder()
-                        .name("Product ID: " + detail.getProductId())
-                        .quantity(detail.getQuantity())
-                        .price(detail.getPrice().intValue())
-                        .build()
+        List<ItemData> items = orderDetails.stream().map(detail -> {
+                    // PayOS item name limit check - keep it concise
+                    String itemName = "SP#" + detail.getProductId(); // "SP#" = "Sản phẩm #" shortened
+                    if (itemName.length() > 25) {
+                        itemName = itemName.substring(0, 25);
+                    }
+                    
+                    return ItemData.builder()
+                            .name(itemName)
+                            .quantity(detail.getQuantity())
+                            .price(detail.getPrice().intValue())
+                            .build();
+                }
         ).collect(Collectors.toList());
 
         long orderCode = System.currentTimeMillis();
         int totalAmount = order.getTotalPrice().intValue();
 
+        // PayOS description limit: 25 characters max
+        String shortOrderId = orderId.length() > 10 ? orderId.substring(0, 10) : orderId;
+        String description = "DH#" + shortOrderId; // "DH#" = "Đơn hàng #" shortened
+
         PaymentData paymentData = PaymentData.builder()
                 .orderCode(orderCode)
                 .amount(totalAmount)
-                .description("Thanh toán đơn hàng #" + orderId)
+                .description(description)
                 .returnUrl(webhookUrl + "/success")
                 .cancelUrl(webhookUrl + "/cancel")
                 .items(items)
@@ -69,7 +80,6 @@ public class PaymentServiceImpl implements PaymentService {
                 .orderCode(orderCode)
                 .amount(checkoutData.getAmount())
                 .description(checkoutData.getDescription())
-                .orderCode(Instant.now().toEpochMilli())
                 .status(checkoutData.getStatus())
                 .paymentLinkId(checkoutData.getPaymentLinkId())
                 .checkoutUrl(checkoutData.getCheckoutUrl())

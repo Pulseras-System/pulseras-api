@@ -15,7 +15,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${pulseras.fe.dev-url}")
+    @Value("${pulseras.openapi.dev-url}")
     private String frontendUrl;
 
     public void sendPasswordResetEmail(String to, String token) throws MessagingException {
