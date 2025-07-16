@@ -116,6 +116,14 @@ public class AccountServiceImpl implements AccountService {
             throw new AuthenticationException("Invalid username or email");
         }
 
+        if (account.getStatus() == 0) {
+//            throw new AuthenticationException("Account is disabled");
+            return LoginResponseDTO.builder()
+                    .token("Tài khoản của bạn đã bị khóa.")
+                    .account(null)
+                    .build();
+        }
+
         // Generate JWT token and return response
         String token = jwtUtil.generateToken(account);
         AccountDTO accountDTO = AccountMapper.toDTO(account);
