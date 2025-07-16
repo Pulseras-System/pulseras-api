@@ -68,9 +68,30 @@ public class ProductController {
     }
 
 
-    @PutMapping("/{id}")
-    public ProductDto update(@PathVariable String id, @Valid @RequestBody CreateProductDto dto) {
-        return service.update(id, dto);
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductDto update(
+            @PathVariable String id,
+            @RequestParam("categoryIds") List<String> categoryIds,
+            @RequestParam("productName") String productName,
+            @RequestParam("productDescription") String productDescription,
+            @RequestParam("productMaterial") String productMaterial,
+            @RequestParam("quantity") int quantity,
+            @RequestParam("type") String type,
+            @RequestParam("price") BigDecimal price,
+            @RequestParam("status") Integer status,
+            @RequestPart(name = "image", required = false) MultipartFile image
+    ) {
+        CreateProductDto dto = new CreateProductDto();
+        dto.setCategoryIds(categoryIds);
+        dto.setProductName(productName);
+        dto.setProductDescription(productDescription);
+        dto.setProductMaterial(productMaterial);
+        dto.setQuantity(quantity);
+        dto.setType(type);
+        dto.setPrice(price);
+        dto.setStatus(status);
+
+        return service.update(id, dto, image);
     }
 
     @DeleteMapping("/{id}")

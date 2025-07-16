@@ -104,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto update(String id, CreateProductDto dto) {
+    public ProductDto update(String id, CreateProductDto dto, MultipartFile image) {
         Product existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -118,11 +118,20 @@ public class ProductServiceImpl implements ProductService {
         existing.setStatus(dto.getStatus());
         existing.setLastEdited(LocalDateTime.now());
 
+        if (image != null && !image.isEmpty()) {
+            if (!image.getContentType().startsWith("image/")) {
+                throw new IllegalArgumentException("Tệp phải là hình ảnh (.jpg, .png, ...)");
+            }
+            String imageUrl = s3Service.uploadFile(image);
+            existing.setProductImage(imageUrl);
+        }
+
         Product updated = repository.save(existing);
         ProductDto productDto = productMapper.toDto(updated);
         applyFinalPrice(productDto);
         return productDto;
     }
+
 
     @Override
     public void delete(String id) {
