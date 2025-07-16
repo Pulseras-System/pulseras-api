@@ -5,6 +5,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
 
@@ -26,4 +27,7 @@ public class Order {
     private Integer status;
     private LocalDateTime lastEdited;
     private LocalDateTime createDate;
+    
+    @Nullable
+    private String banReason;
 }
