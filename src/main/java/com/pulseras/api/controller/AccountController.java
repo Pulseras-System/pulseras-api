@@ -2,6 +2,7 @@ package com.pulseras.api.controller;
 
 import com.pulseras.api.dto.*;
 import com.pulseras.api.service.AccountService;
+import com.pulseras.api.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.Map;
 public class AccountController {
 
     private final AccountService accountService;
+    private final EmailService emailService;
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountDTO> getById(@PathVariable String id) {
@@ -68,6 +70,43 @@ public class AccountController {
     @PatchMapping("/{id}")
     public ResponseEntity<AccountDTO> partialUpdate(@PathVariable String id, @RequestBody UpdateAccountDTO dto) {
         return ResponseEntity.ok(accountService.partialUpdateAccount(id, dto));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<String> updateStatus(@PathVariable String id, @RequestBody StatusUpdateDTO statusUpdate) {
+        try {
+            AccountDTO account = accountService.getAccountById(id);
+            
+            // Update status
+            UpdateAccountDTO updateDto = new UpdateAccountDTO();
+            updateDto.setStatus(statusUpdate.getStatus());
+            accountService.partialUpdateAccount(id, updateDto);
+            
+            // Send email notification if account is being deactivated/reactivated
+            String message;
+            if (statusUpdate.getStatus() == 0) {
+                message = "Tài khoản của bạn đã bị tạm khóa.";
+                if (statusUpdate.getReason() != null && !statusUpdate.getReason().trim().isEmpty()) {
+                    message += " Lý do: " + statusUpdate.getReason();
+                }
+            } else if (statusUpdate.getStatus() == 1) {
+                message = "Tài khoản của bạn đã được kích hoạt lại.";
+            } else {
+                message = "Trạng thái tài khoản của bạn đã được cập nhật.";
+            }
+            
+            // Send notification email
+            try {
+                emailService.sendEmail(account.getEmail(), message, "ACC-" + id);
+            } catch (Exception e) {
+                // Log error but don't fail the status update
+                System.err.println("Failed to send email notification: " + e.getMessage());
+            }
+            
+            return ResponseEntity.ok("Cập nhật trạng thái tài khoản thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi cập nhật trạng thái: " + e.getMessage());
+        }
     }
 
 }

@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface PaymentRepository extends MongoRepository<Payment, String> {
     Optional<Payment> findByOrderCode(Long orderCode);
+    boolean existsByReferenceAndStatus(String reference, String status);
 }
