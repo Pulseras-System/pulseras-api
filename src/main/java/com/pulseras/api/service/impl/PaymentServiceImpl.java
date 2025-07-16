@@ -34,6 +34,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${PAYOS_WEBHOOK_URL}")
     private String webhookUrl;
 
+    @Value("${PULSERAS_OPENAPI_FE_URL}")
+    private String frontendUrl;
+
     @Override
     public Payment createPaymentLink(String orderId) throws Exception {
         OrderDTO order = orderService.getOrderById(orderId);
@@ -69,8 +72,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .orderCode(orderCode)
                 .amount(totalAmount)
                 .description(description)
-                .returnUrl(webhookUrl + "/success")
-                .cancelUrl(webhookUrl + "/cancel")
+                 .returnUrl(frontendUrl + "/checkout/success")
+            .cancelUrl(frontendUrl + "/checkout/success")
                 .items(items)
                 .build();
 
