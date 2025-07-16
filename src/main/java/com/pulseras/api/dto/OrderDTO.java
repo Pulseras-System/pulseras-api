@@ -17,6 +17,7 @@ public class OrderDTO {
     private String voucherId;
     private Double totalPrice;
     private Integer status;
+    private String paymentMethod;
     private LocalDateTime lastEdited;
     private LocalDateTime createDate;
     private List<OrderDetailDTO> orderDetails;
