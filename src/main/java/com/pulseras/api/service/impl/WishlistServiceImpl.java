@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -110,4 +111,17 @@ public class WishlistServiceImpl implements WishlistService {
         }
         wishlistRepository.deleteById(objId);
     }
+
+    @Override
+    public List<WishlistDto> getByAccountId(String accountId) {
+        ObjectId accId = new ObjectId(accountId);
+        List<Wishlist> list = wishlistRepository.findByAccountId(accId);
+
+        return list.stream().map(w -> {
+            Account acc = accountRepository.findById(accId).orElse(null);
+            Product prod = productRepository.findById(w.getProductId()).orElse(null);
+            return WishlistMapper.toDto(w, acc, prod);
+        }).toList();
+    }
+
 }
