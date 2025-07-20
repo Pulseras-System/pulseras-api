@@ -5,8 +5,10 @@ import com.pulseras.api.dto.WishlistDto;
 import com.pulseras.api.service.WishlistService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -45,4 +47,11 @@ public class WishlistController {
     public void delete(@PathVariable String id) {
         service.delete(id);
     }
+
+    @GetMapping("/account/{accountId}")
+    public List<WishlistDto> getByAccountId(@PathVariable String accountId) {
+        return service.getByAccountId(accountId);
+    }
+
+
 }
