@@ -193,6 +193,10 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    private double formatToTwoDecimalPlaces(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
     @Override
     public Map<String, Object> totalCustomersWithCompare() {
         LocalDate today = LocalDate.now();
@@ -229,6 +233,8 @@ public class AccountServiceImpl implements AccountService {
         } else if (thisWeekCustomers > 0) {
             percentChange = 100;
         }
+
+        percentChange = formatToTwoDecimalPlaces(percentChange);
 
         Map<String, Object> result = new HashMap<>();
         result.put("totalCustomers", totalCustomers);

@@ -239,6 +239,7 @@ public class OrderServiceImpl implements OrderService {
             percentChange = 100;
         }
 
+        percentChange = formatToTwoDecimalPlaces(percentChange);
         Map<String, Object> result = new HashMap<>();
         result.put("totalRevenue", totalRevenue);
         result.put("percentChange", percentChange);
@@ -288,6 +289,8 @@ public class OrderServiceImpl implements OrderService {
             percentChange = 100;
         }
 
+        percentChange = formatToTwoDecimalPlaces(percentChange);
+
         Map<String, Object> result = new HashMap<>();
         result.put("totalOrders", totalOrders);
         result.put("percentChange", percentChange);
@@ -298,18 +301,22 @@ public class OrderServiceImpl implements OrderService {
         return result;
     }
 
+    private double formatToTwoDecimalPlaces(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
     @Override
     public Map<String, Object> totalGrowthWithCompare() {
         Map<String, Object> revenueData = totalRevenueWithCompare();
         Map<String, Object> orderData = totalOrdersWithCompare();
         Map<String, Object> customerData = accountService.totalCustomersWithCompare();
 
-        double revenueChange = (double) revenueData.get("percentChange");
-        double orderChange = (double) orderData.get("percentChange");
-        double customerChange = (double) customerData.get("percentChange");
+        double revenueChange = formatToTwoDecimalPlaces((double) revenueData.get("percentChange"));
+        double orderChange = formatToTwoDecimalPlaces((double) orderData.get("percentChange"));
+        double customerChange = formatToTwoDecimalPlaces((double) customerData.get("percentChange"));
 
         // ✅ Trung bình phần trăm tăng trưởng
-        double averageGrowth = (revenueChange + orderChange + customerChange) / 3;
+        double averageGrowth = formatToTwoDecimalPlaces((revenueChange + orderChange + customerChange) / 3);
 
         // ✅ Xác định có tăng hay không
         boolean isIncrease = averageGrowth >= 0;
