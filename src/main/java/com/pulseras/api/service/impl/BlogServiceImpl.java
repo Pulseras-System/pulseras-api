@@ -59,6 +59,16 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
+    public BlogDto getById(String id) {
+        ObjectId oid = new ObjectId(id);
+        Blog blog = blogRepo.findById(oid)
+                .orElseThrow(() -> new ResourceNotFoundException("Blog not found"));
+        Account acc = accRepo.findById(blog.getAccountId()).orElse(null);
+        return BlogMapper.toDto(blog, acc);
+    }
+
+
+    @Override
     public List<BlogDto> get5NewestBlogs() {
         return blogRepo.findTop5ByStatusOrderByCreateDateDesc(1).stream()
                 .map(b -> BlogMapper.toDto(b, accRepo.findById(b.getAccountId()).orElse(null)))

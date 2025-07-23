@@ -29,18 +29,23 @@ public class BlogController {
         return service.getByAccountId(accountId);
     }
 
+    @GetMapping("/{id}")
+    public BlogDto getById(@PathVariable String id) {
+        return service.getById(id);
+    }
+
     @GetMapping("/newest")
     public List<BlogDto> get5Newest() {
         return service.get5NewestBlogs();
     }
 
-    @PostMapping
-    public BlogDto create(@RequestBody CreateBlogDto dto) {
+    @PostMapping(consumes = "multipart/form-data")
+    public BlogDto create(@ModelAttribute CreateBlogDto dto) {
         return service.create(dto);
     }
 
-    @PutMapping("/{id}")
-    public BlogDto update(@PathVariable String id, @RequestBody CreateBlogDto dto) {
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public BlogDto update(@PathVariable String id, @ModelAttribute CreateBlogDto dto) {
         return service.update(id, dto);
     }
 
