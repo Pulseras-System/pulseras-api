@@ -8,6 +8,7 @@ import java.util.Map;
 public interface BlogService {
     Map<String, Object> getAll(String keyword, int page, int size, String sort);
     List<BlogDto> getByAccountId(String accountId);
+    BlogDto getById(String id);
     List<BlogDto> get5NewestBlogs();
     BlogDto create(CreateBlogDto dto);
     BlogDto update(String id, CreateBlogDto dto);

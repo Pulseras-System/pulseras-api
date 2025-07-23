@@ -29,6 +29,11 @@ public class BlogController {
         return service.getByAccountId(accountId);
     }
 
+    @GetMapping("/{id}")
+    public BlogDto getById(@PathVariable String id) {
+        return service.getById(id);
+    }
+
     @GetMapping("/newest")
     public List<BlogDto> get5Newest() {
         return service.get5NewestBlogs();
