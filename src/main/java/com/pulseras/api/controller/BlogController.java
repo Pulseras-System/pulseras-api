@@ -34,32 +34,13 @@ public class BlogController {
         return service.get5NewestBlogs();
     }
 
-    @PostMapping(consumes = "application/x-www-form-urlencoded")
-    public BlogDto create(@RequestParam String accountId,
-                          @RequestParam String title,
-                          @RequestParam String content,
-                          @RequestParam int status) {
-        CreateBlogDto dto = new CreateBlogDto();
-        dto.setAccountId(accountId);
-        dto.setTitle(title);
-        dto.setContent(content);
-        dto.setStatus(status);
-
+    @PostMapping(consumes = "multipart/form-data")
+    public BlogDto create(@ModelAttribute CreateBlogDto dto) {
         return service.create(dto);
     }
 
-    @PutMapping(value = "/{id}", consumes = "application/x-www-form-urlencoded")
-    public BlogDto update(@PathVariable String id,
-                          @RequestParam String accountId,
-                          @RequestParam String title,
-                          @RequestParam String content,
-                          @RequestParam int status) {
-        CreateBlogDto dto = new CreateBlogDto();
-        dto.setAccountId(accountId);
-        dto.setTitle(title);
-        dto.setContent(content);
-        dto.setStatus(status);
-
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public BlogDto update(@PathVariable String id, @ModelAttribute CreateBlogDto dto) {
         return service.update(id, dto);
     }
 
