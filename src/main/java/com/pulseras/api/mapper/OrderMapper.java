@@ -41,10 +41,10 @@ public class OrderMapper {
                 .map(OrderDetailMapper::toDTO)
                 .collect(Collectors.toList());
 
-        String accountName = "";
+        String fullName = "";
         if (entity.getAccountId() != null) {
-            accountName = accountRepository.findById(new ObjectId(entity.getAccountId()))
-                    .map(Account::getUsername)
+            fullName = accountRepository.findById(new ObjectId(entity.getAccountId()))
+                    .map(Account::getFullName)
                     .orElse("");
         }
 
@@ -59,7 +59,7 @@ public class OrderMapper {
                 .lastEdited(entity.getLastEdited())
                 .createDate(entity.getCreateDate())
                 .orderDetails(orderDetails)
-                .accountName(accountName)
+                .fullName(fullName)
                 .build();
     }
 
