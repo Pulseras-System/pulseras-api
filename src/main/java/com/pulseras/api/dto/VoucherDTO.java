@@ -3,7 +3,6 @@ package com.pulseras.api.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -11,16 +10,30 @@ import java.util.List;
 @Builder
 public class VoucherDTO {
     private String id;
+    private String voucherCode;
     private String voucherName;
-    private String accountId; // Account that owns this voucher
-    private List<String> usedByAccounts; // List of account IDs that have used this voucher
-    private Integer voucherQuantity;
-    private Double minPrice;
-    private Double maxDiscount;
-    private Double discountPercentage;
-    private LocalDateTime startDay;
-    private LocalDateTime expireDay;
-    private Integer status;
+    private String description;
+    
+    // Voucher availability
+    private Integer totalQuantity;
+    private Integer usedQuantity;
+    
+    // Discount configuration
+    private String discountType;
+    private Double discountValue;
+    private Double minOrderAmount;
+    private Double maxDiscountAmount;
+    
+    // Usage restrictions
+    private Integer maxUsagePerUser;
+    private Boolean isActive;
+    
+    // Time restrictions
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    
+    // Metadata
     private LocalDateTime createDate;
     private LocalDateTime lastEdited;
+    private String banReason;
 }
