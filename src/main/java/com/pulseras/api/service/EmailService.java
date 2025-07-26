@@ -1,6 +1,7 @@
 package com.pulseras.api.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -11,11 +12,12 @@ import jakarta.mail.internet.MimeMessage;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${pulseras.openapi.dev-url}")
+    @Value("${pulseras.openapi.fe-url}")
     private String frontendUrl;
 
     public void sendPasswordResetEmail(String to, String token) throws MessagingException {
@@ -83,6 +85,63 @@ public class EmailService {
                 "    <div style='text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;'>" +
                 "        <p>© 2025 Pulseras. Tất cả quyền được bảo lưu.</p>" +
                 "        <p>Email này được gửi liên quan đến đơn hàng của bạn. Vui lòng không trả lời email này.</p>" +
+                "    </div>" +
+                "</body>" +
+                "</html>";
+    }
+
+    public void sendFeedbackEmail(String userEmail, String userName, String subject, String content) throws MessagingException {
+        log.info("Sending feedback email to pulserasapp@gmail.com from user: {}", userEmail);
+        
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+        helper.setTo("vuquangminh12122004@gmail.com"); // Test with different email
+        helper.setFrom("pulserasapp@gmail.com"); // Explicitly set sender
+        helper.setReplyTo(userEmail);
+        helper.setSubject("Customer Feedback: " + (subject != null && !subject.trim().isEmpty() ? subject : "General Feedback"));
+        
+        String htmlContent = buildFeedbackEmailTemplate(userEmail, userName, content);
+        helper.setText(htmlContent, true);
+
+        mailSender.send(mimeMessage);
+        log.info("Feedback email sent successfully to pulserasapp@gmail.com from user: {}", userEmail);
+    }
+
+    private String buildFeedbackEmailTemplate(String userEmail, String userName, String content) {
+        String displayName = (userName != null && !userName.trim().isEmpty()) ? userName : "Anonymous User";
+        
+        return "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "    <meta charset='UTF-8'>" +
+                "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+                "    <title>Customer Feedback</title>" +
+                "</head>" +
+                "<body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;'>" +
+                "    <div style='background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>" +
+                "        <h1 style='color: white; margin: 0; font-size: 28px;'>📝 Customer Feedback</h1>" +
+                "        <p style='color: #f0f0f0; margin: 10px 0 0 0; font-size: 16px;'>New feedback from Pulseras customer</p>" +
+                "    </div>" +
+                "    <div style='background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>" +
+                "        <div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;'>" +
+                "            <h2 style='color: #495057; margin: 0 0 15px 0; font-size: 20px;'>👤 Customer Information</h2>" +
+                "            <p style='margin: 5px 0;'><strong>Name:</strong> " + displayName + "</p>" +
+                "            <p style='margin: 5px 0;'><strong>Email:</strong> <a href='mailto:" + userEmail + "' style='color: #007bff;'>" + userEmail + "</a></p>" +
+                "            <p style='margin: 5px 0;'><strong>Date:</strong> " + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + "</p>" +
+                "        </div>" +
+                "        <div style='background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 25px;'>" +
+                "            <h3 style='color: #856404; margin: 0 0 15px 0; font-size: 18px;'>💬 Feedback Content</h3>" +
+                "            <div style='background: white; padding: 15px; border-radius: 5px; border: 1px solid #dee2e6;'>" +
+                "                <p style='margin: 0; font-size: 16px; color: #495057; white-space: pre-wrap;'>" + content + "</p>" +
+                "            </div>" +
+                "        </div>" +
+                "        <div style='background: #d1ecf1; padding: 15px; border-radius: 8px; text-align: center; margin-top: 25px;'>" +
+                "            <p style='margin: 0; color: #0c5460; font-size: 14px;'>📧 You can reply directly to this email to respond to the customer</p>" +
+                "        </div>" +
+                "    </div>" +
+                "    <div style='text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;'>" +
+                "        <p>© 2025 Pulseras Admin Panel. Customer feedback system.</p>" +
                 "    </div>" +
                 "</body>" +
                 "</html>";

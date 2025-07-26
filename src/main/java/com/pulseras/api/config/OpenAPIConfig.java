@@ -15,14 +15,18 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenAPIConfig {
 
-    @Value("${pulseras.openapi.dev-url}")
-    private String devUrl;
+    @Value("${server.port}")
+    private String serverPort;
 
     @Bean
     public OpenAPI myOpenAPI() {
         Server devServer = new Server();
-        devServer.setUrl(devUrl);
-        devServer.setDescription("Server URL in Development environment");
+        devServer.setUrl("http://localhost:" + serverPort);
+        devServer.setDescription("Backend API Server");
+
+        Server prodServer = new Server();
+        prodServer.setUrl("https://your-domain.com");
+        prodServer.setDescription("Production Server (update when deployed)");
 
         Contact contact = new Contact();
         contact.setEmail("vqm@gmail.com");
@@ -34,9 +38,9 @@ public class OpenAPIConfig {
                 .title("Pulseras API")
                 .version("1.0")
                 .contact(contact)
-                .description("This API exposes endpoints to manage tutorials.").termsOfService("https://www.bezkoder.com/terms")
+                .description("This API exposes endpoints to manage Pulseras bracelet system.").termsOfService("https://www.bezkoder.com/terms")
                 .license(mitLicense);
 
-        return new OpenAPI().info(info).servers(List.of(devServer));
+        return new OpenAPI().info(info).servers(List.of(devServer, prodServer));
     }
 }
