@@ -96,8 +96,8 @@ public class EmailService {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
-        helper.setTo("pulserasapp@gmail.com"); // Change back to business email
-        helper.setFrom("pulserasapp@gmail.com"); // Explicitly set sender
+        helper.setTo("pulserasapp@gmail.com"); 
+        helper.setFrom("pulserasapp@gmail.com"); 
         helper.setReplyTo(userEmail);
         helper.setSubject("Customer Feedback: " + (subject != null && !subject.trim().isEmpty() ? subject : "General Feedback"));
         
