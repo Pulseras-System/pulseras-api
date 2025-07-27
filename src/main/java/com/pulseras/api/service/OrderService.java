@@ -13,7 +13,7 @@ public interface OrderService {
     List<OrderDTO> getAllOrders();
     OrderDTO getOrderById(String id);
     OrderDTO createOrder(CreateOrderDTO dto);
-    OrderDTO updateOrder(String id, CreateOrderDTO dto);
+    OrderDTO updateOrder(String id, UpdateOrderDTO dto);
     void deleteOrder(String id);
     List<OrderDTO> getOrdersByAccountId(String accountId);
     Map<String, Object> totalRevenueWithCompare();

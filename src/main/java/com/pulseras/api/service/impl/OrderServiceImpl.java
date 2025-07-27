@@ -70,18 +70,18 @@ public class OrderServiceImpl implements OrderService {
         return OrderMapper.toDTO(saved);
     }
     @Override
-    public OrderDTO updateOrder(String id, CreateOrderDTO dto) {
+    public OrderDTO updateOrder(String id, UpdateOrderDTO dto) {
         Order existing = orderRepository.findById(new ObjectId(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
-        // Validate voucher ownership if voucher is provided
-        if (dto.getVoucherId() != null && dto.getAccountId() != null) {
-            validateVoucherOwnership(dto.getVoucherId(), dto.getAccountId());
-        }
+//        // Validate voucher ownership if voucher is provided
+//        if (dto.getVoucherId() != null && dto.getAccountId() != null) {
+//            validateVoucherOwnership(dto.getVoucherId(), dto.getAccountId());
+//        }
 
         existing.setOrderInfor(dto.getOrderInfor());
         existing.setAmount(dto.getAmount());
-        existing.setAccountId(dto.getAccountId());
+//        existing.setAccountId(dto.getAccountId());
         existing.setVoucherId(dto.getVoucherId());
         existing.setTotalPrice(dto.getTotalPrice());
         existing.setStatus(dto.getStatus());
